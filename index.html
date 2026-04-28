@@ -148,6 +148,48 @@ input[type=number],select{font-family:var(--font-c);font-size:13px;padding:5px 8
 .if-row-head .cond{color:var(--text2)}
 .if-row-body{padding:7px 14px 9px;border-top:.5px solid var(--border);display:none}
 .if-row.active .if-row-body{display:block;background:var(--info-bg);color:var(--info-text)}
+
+/* ── CODE EDITOR ── */
+.editor-wrap {
+  position: relative;
+  width: 100%;
+  height: 320px;
+  background: #1e1e1e;
+}
+#compiler-editor, #editor-highlight {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  padding: 16px;
+  font-family: var(--font-c);
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre;
+  overflow: auto;
+  border: none;
+  margin: 0;
+  tab-size: 4;
+}
+#compiler-editor {
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  caret-color: #fff;
+  z-index: 2;
+  resize: none;
+  background: transparent;
+  outline: none;
+}
+#editor-highlight {
+  color: #d4d4d4;
+  z-index: 1;
+  pointer-events: none;
+}
+#editor-highlight .cm { color: #6a9955; font-style: italic; }
+#editor-highlight .kw { color: #c586c0; }
+#editor-highlight .tp { color: #569cd6; }
+#editor-highlight .fn { color: #dcdcaa; }
+#editor-highlight .str { color: #ce9178; }
+#editor-highlight .num { color: #b5cea8; }
 .if-row.active .if-row-head{background:var(--info-bg)}
 .if-arrow{margin-left:auto;font-size:11px;color:var(--text3)}
 .if-arrow.running{color:var(--ice);font-weight:600}
@@ -626,7 +668,9 @@ input[type=number],select{font-family:var(--font-c);font-size:13px;padding:5px 8
       <button onclick="resetCompiler()" style="padding:4px 10px; font-size:12px; background:#444; color:#ccc; border-color:#555">Reset</button>
     </div>
     
-    <textarea id="compiler-editor" spellcheck="false" style="width:100%; height:320px; background:#1e1e1e; color:#d4d4d4; border:none; padding:16px; font-family:var(--font-c); font-size:14px; line-height:1.5; outline:none; resize:vertical">#include <stdio.h>
+    <div class="editor-wrap">
+      <pre id="editor-highlight"></pre>
+      <textarea id="compiler-editor" spellcheck="false" oninput="updateHighlight()" onscroll="syncScroll()">#include <stdio.h>
 
 int main() {
     printf("Ice & Steel forges the best code!\n");
@@ -636,6 +680,7 @@ int main() {
     
     return 0;
 }</textarea>
+    </div>
 
     <div style="background:#121212; border-top:1px solid #333; padding:12px 16px; min-height:100px">
       <div style="font-family:var(--font-c); font-size:10px; color:#666; text-transform:uppercase; margin-bottom:8px; letter-spacing:0.05em">Output Terminal</div>
@@ -1304,8 +1349,43 @@ async function runCompiler() {
 
 function resetCompiler() {
   document.getElementById('compiler-editor').value = '#include <stdio.h>\n\nint main() {\n    printf("Ice & Steel forges the best code!\\n");\n    \n    int a = 10, b = 20;\n    printf("Sum of %d and %d is %d\\n", a, b, a + b);\n    \n    return 0;\n}';
+  updateHighlight();
   document.getElementById('compiler-output').textContent = 'Click "Run Code" to compile...';
   document.getElementById('compiler-output').style.color = '#ccc';
+}
+
+function highlightC(code) {
+  const tokens = [];
+  let h = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  
+  // Protect comments and strings
+  h = h.replace(/(\/\/.*|\/\*[\s\S]*?\*\/|"[^"]*")/g, (m) => {
+    tokens.push(m);
+    return `__TOK${tokens.length - 1}__`;
+  });
+
+  h = h.replace(/\b(int|float|double|char|void|long|short|unsigned|signed|struct)\b/g, '<span class="tp">$1</span>')
+       .replace(/\b(return|if|else|for|while|do|switch|case|break|continue|#include|#define)\b/g, '<span class="kw">$1</span>')
+       .replace(/\b([a-zA-Z_][a-zA-Z0-9_]*)\s*(?=\()/g, '<span class="fn">$1</span>')
+       .replace(/\b(\d+)\b/g, '<span class="num">$1</span>');
+
+  return h.replace(/__TOK(\d+)__/g, (_, i) => {
+    const t = tokens[i];
+    const cls = t.startsWith('"') ? 'str' : 'cm';
+    return `<span class="${cls}">${t}</span>`;
+  });
+}
+
+function updateHighlight() {
+  const code = document.getElementById('compiler-editor').value;
+  document.getElementById('editor-highlight').innerHTML = highlightC(code) + '\n';
+}
+
+function syncScroll() {
+  const ed = document.getElementById('compiler-editor');
+  const hi = document.getElementById('editor-highlight');
+  hi.scrollTop = ed.scrollTop;
+  hi.scrollLeft = ed.scrollLeft;
 }
 
 // Quick Helpers: Tab, Auto-close, Auto-indent
@@ -1331,7 +1411,10 @@ document.getElementById('compiler-editor').addEventListener('keydown', function(
     this.value = this.value.substring(0, start) + '\n' + indent + extra + this.value.substring(end);
     this.selectionStart = this.selectionEnd = start + 1 + indent.length + extra.length;
   }
+  updateHighlight();
 });
+
+updateHighlight();
 </script>
 </body>
 </html>
