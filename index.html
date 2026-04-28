@@ -5,1214 +5,1333 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ice & Steel in the Art of C — A Beginner's Guide</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Syne:wght@400;700;800&display=swap');
-
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --ice: #3a8fc7;
-    --ice-light: #e6f4fb;
-    --ice-dark: #1a5a8a;
-    --accent: #e85d2a;
-    --bg: #ffffff;
-    --bg2: #f5f4f1;
-    --bg3: #eceae5;
-    --text: #1a1a18;
-    --text2: #555550;
-    --text3: #888880;
-    --border: rgba(0,0,0,0.1);
-    --border2: rgba(0,0,0,0.18);
-    --info-bg: #e6f1fb;
-    --info-border: #3a8fc7;
-    --info-text: #1a5a8a;
-    --warn-bg: #fdf3e3;
-    --warn-border: #d4860a;
-    --warn-text: #7a4a05;
-    --success-bg: #eaf3de;
-    --success-border: #3b6d11;
-    --success-text: #27500a;
-    --font-display: 'Syne', system-ui, sans-serif;
-    --font-body: system-ui, -apple-system, sans-serif;
-    --font-code: 'JetBrains Mono', 'Fira Code', monospace;
-    --radius: 8px;
-    --radius-lg: 12px;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #18181a;
-      --bg2: #222224;
-      --bg3: #2a2a2c;
-      --text: #f0efe8;
-      --text2: #aaa8a0;
-      --text3: #666660;
-      --border: rgba(255,255,255,0.1);
-      --border2: rgba(255,255,255,0.18);
-      --info-bg: #0c2a3e;
-      --info-border: #3a8fc7;
-      --info-text: #85c4f0;
-      --warn-bg: #2a1e08;
-      --warn-border: #c47a0a;
-      --warn-text: #f0b060;
-      --success-bg: #0e2208;
-      --success-border: #4a8a18;
-      --success-text: #88cc44;
-    }
-  }
-
-  html { scroll-behavior: smooth; }
-
-  body {
-    font-family: var(--font-body);
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.7;
-    font-size: 16px;
-    overflow-x: hidden;
-  }
-
-  /* Layout */
-  .layout { display: flex; min-height: 100vh; }
-
-  .sidebar {
-    width: 220px;
-    flex-shrink: 0;
-    position: sticky;
-    top: 0;
-    height: 100vh;
-    overflow-y: auto;
-    border-right: 0.5px solid var(--border);
-    padding: 2rem 0;
-    background: var(--bg);
-  }
-
-  .sidebar-logo {
-    padding: 0 1.25rem 1.5rem;
-    border-bottom: 0.5px solid var(--border);
-    margin-bottom: 1rem;
-  }
-  .sidebar-logo span {
-    font-family: var(--font-display);
-    font-size: 14px;
-    font-weight: 800;
-    color: var(--ice);
-    display: block;
-    line-height: 1.2;
-  }
-  .sidebar-logo small {
-    font-size: 11px;
-    color: var(--text3);
-    font-family: var(--font-code);
-  }
-
-  .nav-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 7px 1.25rem;
-    font-size: 13px;
-    color: var(--text2);
-    text-decoration: none;
-    transition: color 0.15s, background 0.15s;
-    border-left: 2px solid transparent;
-  }
-  .nav-item:hover { color: var(--text); background: var(--bg2); }
-  .nav-item.active { color: var(--ice-dark); border-left-color: var(--ice); background: var(--info-bg); }
-  .nav-num { font-family: var(--font-code); font-size: 10px; color: var(--text3); min-width: 18px; }
-
-  .main {
-    flex: 1;
-    max-width: 780px;
-    min-width: 0;
-    padding: 3rem 3rem 6rem;
-    margin: 0 auto;
-  }
-
-  /* Mobile */
-  @media (max-width: 768px) {
-    .sidebar { display: none; }
-    .main { padding: 1.5rem 1.25rem 4rem; }
-  }
-
-  /* Hero */
-  .hero { padding-bottom: 2.5rem; border-bottom: 0.5px solid var(--border); margin-bottom: 0; }
-  .hero-badge {
-    display: inline-block;
-    font-size: 11px;
-    font-family: var(--font-code);
-    background: var(--bg2);
-    border: 0.5px solid var(--border2);
-    border-radius: 4px;
-    padding: 3px 8px;
-    color: var(--text3);
-    margin-bottom: 1rem;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-  }
-  .hero h1 {
-    font-family: var(--font-display);
-    font-size: clamp(28px, 5vw, 44px);
-    font-weight: 800;
-    line-height: 1.1;
-    margin-bottom: 0.75rem;
-    letter-spacing: -0.02em;
-  }
-  .hero h1 span { color: var(--ice); }
-  .hero p { font-size: 15px; color: var(--text2); max-width: 540px; line-height: 1.7; }
-
-  /* Section */
-  .section { padding: 2.5rem 0; border-bottom: 0.5px solid var(--border); }
-  .section-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 1.25rem; }
-  .section-num { font-family: var(--font-code); font-size: 12px; color: var(--text3); }
-  .section h2 { font-family: var(--font-display); font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
-
-  /* Prose */
-  p.prose { font-size: 15px; line-height: 1.75; color: var(--text2); margin-bottom: 1rem; }
-  p.prose strong { color: var(--text); font-weight: 500; }
-
-  code {
-    font-family: var(--font-code);
-    font-size: 13px;
-    background: var(--bg2);
-    border: 0.5px solid var(--border);
-    border-radius: 4px;
-    padding: 1px 5px;
-    color: var(--text);
-  }
-
-  /* Code block */
-  .codeblock {
-    background: var(--bg2);
-    border: 0.5px solid var(--border);
-    border-radius: var(--radius);
-    padding: 1rem 1.25rem;
-    margin: 1rem 0;
-    font-family: var(--font-code);
-    font-size: 13px;
-    line-height: 1.9;
-    overflow-x: auto;
-    white-space: pre;
-    tab-size: 4;
-  }
-  .cm { color: var(--text3); }
-  .kw { color: var(--ice-dark); }
-  .fn { color: var(--ice); }
-  .str { color: #2a7a3a; }
-  .num { color: var(--accent); }
-  .tp { color: var(--ice-dark); }
-
-  @media (prefers-color-scheme: dark) {
-    .str { color: #6abf7a; }
-    .kw { color: #80c8f0; }
-    .fn { color: #60b8f0; }
-    .tp { color: #80c8f0; }
-  }
-
-  /* Callouts */
-  .tip, .warn {
-    display: flex;
-    gap: 10px;
-    border-left: 3px solid;
-    border-radius: 0 var(--radius) var(--radius) 0;
-    padding: 12px 14px;
-    margin: 1rem 0;
-    font-size: 14px;
-    line-height: 1.6;
-  }
-  .tip { background: var(--info-bg); border-color: var(--info-border); color: var(--info-text); }
-  .warn { background: var(--warn-bg); border-color: var(--warn-border); color: var(--warn-text); }
-  .tip-icon, .warn-icon { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
-
-  /* Table */
-  .dtable {
-    width: 100%;
-    font-size: 13px;
-    border-collapse: collapse;
-    margin: 1rem 0;
-    display: block;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Syne:wght@400;700;800&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ice:#3a8fc7;--ice-dark:#1a5a8a;--accent:#e85d2a;
+  --bg:#ffffff;--bg2:#f5f4f1;--bg3:#eceae5;
+  --text:#1a1a18;--text2:#555550;--text3:#888880;
+  --border:rgba(0,0,0,0.1);--border2:rgba(0,0,0,0.18);
+  --info-bg:#e6f1fb;--info-border:#3a8fc7;--info-text:#1a5a8a;
+  --warn-bg:#fdf3e3;--warn-border:#d4860a;--warn-text:#7a4a05;
+  --ok-bg:#eaf3de;--ok-border:#3b6d11;--ok-text:#27500a;
+  --font-d:'Syne',system-ui,sans-serif;
+  --font-b:system-ui,-apple-system,sans-serif;
+  --font-c:'JetBrains Mono','Fira Code',monospace;
+  --r:8px;--rl:12px;
 }
-  .dtable th {
-    text-align: left;
-    font-weight: 500;
-    color: var(--text3);
-    font-size: 11px;
-    padding: 6px 12px;
-    border-bottom: 0.5px solid var(--border2);
-    font-family: var(--font-code);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-  }
-  .dtable td { padding: 9px 12px; border-bottom: 0.5px solid var(--border); vertical-align: top; font-size: 13px; }
-  .dtable td:first-child { font-family: var(--font-code); color: var(--ice-dark); font-weight: 500; }
-  .dtable td:last-child { color: var(--text2); }
-  .dtable code { font-size: 12px; }
+@media(prefers-color-scheme:dark){:root{
+  --bg:#18181a;--bg2:#222224;--bg3:#2a2a2c;
+  --text:#f0efe8;--text2:#aaa8a0;--text3:#555550;
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.16);
+  --info-bg:#0c2a3e;--info-border:#3a8fc7;--info-text:#85c4f0;
+  --warn-bg:#2a1e08;--warn-border:#c47a0a;--warn-text:#f0b060;
+  --ok-bg:#0e2208;--ok-border:#4a8a18;--ok-text:#88cc44;
+}}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-b);background:var(--bg);color:var(--text);line-height:1.7;font-size:16px;overflow-x:hidden}
+.layout{display:flex;min-height:100vh}
+.sidebar{width:220px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;border-right:.5px solid var(--border);padding:2rem 0;background:var(--bg)}
+.sidebar-logo{padding:0 1.25rem 1.5rem;border-bottom:.5px solid var(--border);margin-bottom:1rem}
+.sidebar-logo span{font-family:var(--font-d);font-size:14px;font-weight:800;color:var(--ice);display:block;line-height:1.2}
+.sidebar-logo small{font-size:11px;color:var(--text3);font-family:var(--font-c)}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 1.25rem;font-size:13px;color:var(--text2);text-decoration:none;transition:color .15s,background .15s;border-left:2px solid transparent}
+.nav-item:hover{color:var(--text);background:var(--bg2)}
+.nav-item.active{color:var(--ice-dark);border-left-color:var(--ice);background:var(--info-bg)}
+.nav-num{font-family:var(--font-c);font-size:10px;color:var(--text3);min-width:18px}
+.main{flex:1;max-width:800px;padding:3rem 3rem 6rem;margin:0 auto;min-width:0}
+@media(max-width:768px){.sidebar{display:none}.main{padding:1.5rem 1.25rem 4rem}}
+.hero{padding-bottom:2.5rem;border-bottom:.5px solid var(--border)}
+.hero-badge{display:inline-block;font-size:11px;font-family:var(--font-c);background:var(--bg2);border:.5px solid var(--border2);border-radius:4px;padding:3px 8px;color:var(--text3);margin-bottom:1rem;letter-spacing:.05em;text-transform:uppercase}
+.hero h1{font-family:var(--font-d);font-size:clamp(28px,5vw,44px);font-weight:800;line-height:1.1;margin-bottom:.75rem;letter-spacing:-.02em}
+.hero h1 span{color:var(--ice)}
+.hero p{font-size:15px;color:var(--text2);max-width:540px;line-height:1.7}
+.section{padding:2.5rem 0;border-bottom:.5px solid var(--border)}
+.section-header{display:flex;align-items:baseline;gap:12px;margin-bottom:1.25rem}
+.section-num{font-family:var(--font-c);font-size:12px;color:var(--text3)}
+.section h2{font-family:var(--font-d);font-size:22px;font-weight:700;letter-spacing:-.01em}
+p.prose{font-size:15px;line-height:1.75;color:var(--text2);margin-bottom:1rem}
+p.prose strong{color:var(--text);font-weight:500}
+code{font-family:var(--font-c);font-size:13px;background:var(--bg2);border:.5px solid var(--border);border-radius:4px;padding:1px 5px;color:var(--text)}
+.cb{background:var(--bg2);border:.5px solid var(--border);border-radius:var(--r);padding:1rem 1.25rem;margin:1rem 0;font-family:var(--font-c);font-size:13px;line-height:1.9;overflow-x:auto;white-space:pre;tab-size:4}
+.cm{color:var(--text3)}.kw{color:var(--ice-dark)}.fn{color:var(--ice)}.str{color:#2a7a3a}.num{color:var(--accent)}.tp{color:var(--ice-dark)}
+@media(prefers-color-scheme:dark){.str{color:#6abf7a}.kw,.tp{color:#80c8f0}.fn{color:#60b8f0}}
+.tip,.warn{display:flex;gap:10px;border-left:3px solid;border-radius:0 var(--r) var(--r) 0;padding:12px 14px;margin:1rem 0;font-size:14px;line-height:1.6}
+.tip{background:var(--info-bg);border-color:var(--info-border);color:var(--info-text)}
+.warn{background:var(--warn-bg);border-color:var(--warn-border);color:var(--warn-text)}
+.dtable{width:100%;font-size:13px;border-collapse:collapse;margin:1rem 0;display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.dtable th{text-align:left;font-weight:500;color:var(--text3);font-size:11px;padding:6px 12px;border-bottom:.5px solid var(--border2);font-family:var(--font-c);text-transform:uppercase;letter-spacing:.04em}
+.dtable td{padding:9px 12px;border-bottom:.5px solid var(--border);vertical-align:top;font-size:13px}
+.dtable td:first-child{font-family:var(--font-c);color:var(--ice-dark);font-weight:500}
+.dtable td:last-child{color:var(--text2)}
+.dtable code{font-size:12px}
+.demo{border:.5px solid var(--border);border-radius:var(--rl);padding:1.25rem;margin:1rem 0;background:var(--bg)}
+.demo-label{font-size:11px;font-weight:500;color:var(--text3);font-family:var(--font-c);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.875rem}
+button{font-family:var(--font-b);font-size:13px;padding:6px 14px;background:var(--bg);border:.5px solid var(--border2);border-radius:var(--r);color:var(--text);cursor:pointer;transition:background .15s,transform .1s}
+button:hover{background:var(--bg2)}
+button:active{transform:scale(.98)}
+button.btn-primary{background:var(--ice);color:#fff;border-color:var(--ice)}
+button.btn-primary:hover{background:var(--ice-dark);border-color:var(--ice-dark)}
+input[type=range]{height:4px;accent-color:var(--ice);cursor:pointer;width:100%}
+input[type=number],select{font-family:var(--font-c);font-size:13px;padding:5px 8px;background:var(--bg2);border:.5px solid var(--border2);border-radius:var(--r);color:var(--text);height:34px}
+.fmt-row{display:flex;align-items:center;gap:10px;font-family:var(--font-c);font-size:13px;margin:6px 0}
+.fmt-spec{color:var(--accent);font-weight:500;min-width:32px}
+.fmt-arrow{color:var(--text3)}
+.fmt-type{color:var(--text2)}
+.fn-sig{background:var(--bg2);border:.5px solid var(--border2);border-radius:var(--r);padding:1rem 1.25rem;font-family:var(--font-c);font-size:14px;line-height:2.2;margin:1rem 0}
+.fn-part{display:inline-block;padding:2px 7px;border-radius:4px;font-size:12px;border:.5px solid}
+.fn-ret{background:var(--info-bg);color:var(--info-text);border-color:var(--info-border)}
+.fn-nm{background:var(--warn-bg);color:var(--warn-text);border-color:var(--warn-border)}
+.fn-prm{background:var(--ok-bg);color:var(--ok-text);border-color:var(--ok-border)}
+.footer{padding:3rem 0 1rem;text-align:center}
+.footer p{font-size:13px;color:var(--text3);line-height:1.8}
+.footer a{color:var(--ice);text-decoration:none}
 
-  /* Interactive demo */
-  .demo {
-    border: 0.5px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 1.25rem;
-    margin: 1rem 0;
-    background: var(--bg);
-  }
-  .demo-label {
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--text3);
-    font-family: var(--font-code);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 0.875rem;
-  }
+/* ── SCOPE DIAGRAM ── */
+.scope-box{border:1.5px solid var(--border2);border-radius:var(--r);padding:10px 14px;margin:4px 0;cursor:pointer;transition:border-color .2s,background .2s;position:relative}
+.scope-box:hover{border-color:var(--ice)}
+.scope-box.lit{border-color:var(--ice);background:var(--info-bg)}
+.scope-box .sb-label{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:4px}
+.scope-box .sb-vars{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.scope-var{font-size:12px;padding:2px 8px;border-radius:4px;background:var(--bg3);border:.5px solid var(--border2);color:var(--text2);transition:background .2s,color .2s;font-family:var(--font-c)}
+.scope-var.visible{background:var(--ice);color:#fff;border-color:var(--ice)}
+.scope-var.hidden{opacity:.25}
+.scope-result-box{margin-top:10px;padding:10px 14px;border-radius:var(--r);background:var(--bg2);font-size:13px;color:var(--text2);min-height:40px;transition:all .2s;border:.5px solid var(--border)}
 
-  /* Buttons */
-  button {
-    font-family: var(--font-body);
-    font-size: 13px;
-    padding: 6px 14px;
-    background: var(--bg);
-    border: 0.5px solid var(--border2);
-    border-radius: var(--radius);
-    color: var(--text);
-    cursor: pointer;
-    transition: background 0.15s, transform 0.1s;
-  }
-  button:hover { background: var(--bg2); }
-  button:active { transform: scale(0.98); }
+/* ── OPERATORS ── */
+.ops-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin:1rem 0}
+.op-card{background:var(--bg2);border:.5px solid var(--border);border-radius:var(--r);padding:10px 12px;cursor:pointer;transition:border-color .15s,background .15s;font-family:var(--font-c)}
+.op-card:hover{background:var(--bg3);border-color:var(--border2)}
+.op-card.selected{border-color:var(--ice);background:var(--info-bg)}
+.op-sym{font-size:20px;font-weight:500;color:var(--ice-dark);display:block;margin-bottom:3px}
+.op-name{font-size:11px;color:var(--text3);display:block;margin-bottom:4px}
+.op-ex{font-size:12px;color:var(--text2);line-height:1.5}
 
-  /* Inputs */
-  input[type="range"] {
-    height: 4px;
-    accent-color: var(--ice);
-    cursor: pointer;
-  }
-  input[type="number"], select {
-    font-family: var(--font-code);
-    font-size: 13px;
-    padding: 5px 8px;
-    background: var(--bg2);
-    border: 0.5px solid var(--border2);
-    border-radius: var(--radius);
-    color: var(--text);
-    height: 34px;
-  }
+/* ── CALC — fixed layout ── */
+.calc-wrap{display:flex;align-items:stretch;margin:1rem 0;font-family:var(--font-c);border:.5px solid var(--border2);border-radius:var(--r);overflow:hidden;max-width:400px}
+.calc-input{width:80px;font-size:18px;text-align:center;padding:10px;background:var(--bg2);border:none;border-right:.5px solid var(--border2);color:var(--text);height:50px}
+.calc-op{font-size:18px;padding:10px 14px;background:var(--bg2);border:none;border-right:.5px solid var(--border2);color:var(--text);height:50px;cursor:pointer;flex-shrink:0}
+.calc-input-b{width:80px;font-size:18px;text-align:center;padding:10px;background:var(--bg2);border:none;border-right:.5px solid var(--border2);color:var(--text);height:50px}
+.calc-eq{font-size:18px;padding:10px 14px;background:var(--bg2);border:none;border-right:.5px solid var(--border2);color:var(--text3);display:flex;align-items:center;flex-shrink:0}
+.calc-result-box{flex:1;font-size:20px;font-weight:600;padding:10px 16px;background:var(--ice);color:#fff;display:flex;align-items:center;justify-content:center;min-width:64px;font-family:var(--font-c)}
+.calc-note{font-size:12px;color:var(--text3);font-family:var(--font-c);margin-top:8px;min-height:18px}
 
-  /* Scope tree */
-  .scope-tree { font-family: var(--font-code); font-size: 13px; line-height: 2; }
-  .scope-node { cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 2px 0; }
-  .scope-label { font-weight: 500; transition: color 0.1s; }
-  .scope-label:hover, .scope-label.active { color: var(--ice); }
-  .scope-vars { font-size: 12px; color: var(--text3); }
-  .scope-indent { color: var(--text3); }
+/* ── LOOP STEPPER ── */
+.loop-code-panel{background:var(--bg2);border:.5px solid var(--border);border-radius:var(--r) var(--r) 0 0;font-family:var(--font-c);font-size:13px;overflow:hidden}
+.loop-line{display:flex;align-items:center;padding:4px 14px;gap:10px;line-height:1.9;transition:background .2s;white-space:pre}
+.loop-line .ln{color:var(--text3);font-size:11px;min-width:18px;text-align:right;flex-shrink:0}
+.loop-line.active-line{background:rgba(58,143,199,.18);border-left:3px solid var(--ice)}
+.loop-line.active-line .ln{color:var(--ice)}
+.loop-state-panel{background:var(--bg3);border:.5px solid var(--border);border-top:none;border-radius:0 0 var(--r) var(--r);padding:12px 16px;display:flex;gap:24px;flex-wrap:wrap;align-items:center}
+.loop-var{font-family:var(--font-c);font-size:13px}
+.loop-var-name{color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}
+.loop-var-val{font-size:22px;font-weight:700;color:var(--ice-dark);transition:color .2s,transform .2s;display:inline-block}
+.loop-var-val.changed{color:var(--accent);transform:scale(1.15)}
+.loop-output{font-family:var(--font-c);font-size:12px;padding:8px 14px;background:var(--bg2);border:.5px solid var(--border);border-radius:var(--r);margin-top:8px;min-height:36px;color:var(--text2);line-height:1.8;white-space:pre-wrap}
+.loop-output span.out-num{color:var(--ice);font-weight:500}
+.loop-controls{display:flex;gap:8px;margin-top:10px;align-items:center;flex-wrap:wrap}
+.loop-speed{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text3);margin-left:auto}
+.loop-speed input{width:80px}
+.loop-type-tabs{display:flex;gap:4px;margin-bottom:1rem;flex-wrap:wrap}
+.loop-tab{padding:5px 14px;border-radius:var(--r);border:.5px solid var(--border2);font-size:13px;cursor:pointer;background:var(--bg2);color:var(--text2);transition:all .15s}
+.loop-tab.active{background:var(--ice);color:#fff;border-color:var(--ice)}
 
-  /* Operator cards */
-  .ops-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; margin: 1rem 0; }
-  .op-card {
-    background: var(--bg2);
-    border: 0.5px solid var(--border);
-    border-radius: var(--radius);
-    padding: 10px 12px;
-    cursor: pointer;
-    transition: border-color 0.15s, background 0.15s;
-    font-family: var(--font-code);
-  }
-  .op-card:hover { border-color: var(--border2); background: var(--bg3); }
-  .op-sym { font-size: 20px; font-weight: 500; color: var(--ice-dark); display: block; margin-bottom: 3px; }
-  .op-name { font-size: 11px; color: var(--text3); display: block; margin-bottom: 4px; }
-  .op-ex { font-size: 12px; color: var(--text2); line-height: 1.5; }
+/* ── IF/ELSE ── */
+.if-slider-wrap{display:flex;align-items:center;gap:12px;margin-bottom:1rem;flex-wrap:wrap}
+.if-slider-label{font-family:var(--font-c);font-size:13px;color:var(--text2);white-space:nowrap}
+.if-score-display{font-family:var(--font-c);font-size:22px;font-weight:700;min-width:38px;color:var(--ice-dark);text-align:right}
+.if-chain{display:flex;flex-direction:column;gap:5px;margin:1rem 0;font-family:var(--font-c);font-size:13px}
+.if-row{border:.5px solid var(--border);border-radius:var(--r);overflow:hidden;transition:opacity .2s}
+.if-row.inactive{opacity:.28}
+.if-row-head{padding:7px 14px;display:flex;align-items:center;gap:10px;background:var(--bg2)}
+.if-row-head .kw2{color:var(--ice-dark);font-weight:500}
+.if-row-head .cond{color:var(--text2)}
+.if-row-body{padding:7px 14px 9px;border-top:.5px solid var(--border);display:none}
+.if-row.active .if-row-body{display:block;background:var(--info-bg);color:var(--info-text)}
+.if-row.active .if-row-head{background:var(--info-bg)}
+.if-arrow{margin-left:auto;font-size:11px;color:var(--text3)}
+.if-arrow.running{color:var(--ice);font-weight:600}
 
-  /* Loop visualizer */
-  .loop-viz { display: flex; gap: 5px; flex-wrap: wrap; margin: 1rem 0; }
-  .loop-box {
-    width: 36px; height: 36px;
-    border-radius: var(--radius);
-    border: 0.5px solid var(--border);
-    display: flex; align-items: center; justify-content: center;
-    font-family: var(--font-code); font-size: 12px; font-weight: 500;
-    transition: background 0.2s, color 0.2s, border-color 0.2s;
-    color: var(--text3);
-  }
-  .loop-box.active { background: var(--ice); color: #fff; border-color: var(--ice); }
-  .loop-box.done { background: var(--bg2); color: var(--text3); border-color: var(--border); }
-  .progress-bar { height: 3px; background: var(--bg3); border-radius: 2px; overflow: hidden; margin: 6px 0; }
-  .progress-fill { height: 100%; background: var(--ice); border-radius: 2px; transition: width 0.3s; }
+/* ── ARRAY ── */
+.arr-mem{display:flex;gap:0;margin:1rem 0;overflow-x:auto;padding-bottom:8px}
+.arr-slot{flex-shrink:0;width:60px;text-align:center}
+.arr-addr{font-size:10px;color:var(--text3);font-family:var(--font-c);margin-bottom:4px}
+.arr-box{height:44px;border:.5px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:var(--font-c);font-size:14px;font-weight:600;cursor:pointer;transition:background .15s,color .15s;color:var(--text);margin:0 -0.5px}
+.arr-slot:first-child .arr-box{border-radius:var(--r) 0 0 var(--r)}
+.arr-slot:last-child .arr-box{border-radius:0 var(--r) var(--r) 0}
+.arr-box:hover,.arr-box.sel{background:var(--ice);color:#fff;border-color:var(--ice);z-index:1;position:relative}
+.arr-idx2{font-size:11px;color:var(--text3);font-family:var(--font-c);margin-top:5px}
+.arr-info-box{font-family:var(--font-c);font-size:13px;padding:10px 14px;background:var(--bg2);border:.5px solid var(--border);border-radius:var(--r);margin-top:2px;min-height:38px;color:var(--text2)}
+.arr-info-box strong{color:var(--text)}
+.arr-edit-row{display:flex;gap:8px;align-items:center;margin-top:10px;font-family:var(--font-c);font-size:13px;color:var(--text2);flex-wrap:wrap}
+.arr-edit-row input{width:72px}
+.arr-edit-row select{width:72px}
 
-  /* If/else flow */
-  .if-flow { display: flex; flex-direction: column; gap: 6px; margin: 1rem 0; }
-  .if-block {
-    padding: 9px 14px;
-    border-radius: var(--radius);
-    border: 0.5px solid var(--border);
-    font-family: var(--font-code);
-    font-size: 13px;
-    transition: border-color 0.15s, background 0.15s, opacity 0.2s;
-  }
-  .if-block .if-label { font-size: 10px; color: var(--text3); margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.05em; }
-  .if-block.active { background: var(--info-bg); border-color: var(--info-border); color: var(--info-text); }
-  .if-block.inactive { opacity: 0.35; }
-
-  /* Array viz */
-  .arr-viz { display: flex; gap: 5px; flex-wrap: wrap; margin: 1rem 0; align-items: flex-start; }
-  .arr-cell { text-align: center; }
-  .arr-val {
-    width: 48px; height: 40px;
-    border: 0.5px solid var(--border2);
-    border-radius: var(--radius);
-    display: flex; align-items: center; justify-content: center;
-    font-family: var(--font-code); font-size: 13px; font-weight: 500;
-    cursor: pointer; transition: background 0.15s, color 0.15s;
-    color: var(--text);
-  }
-  .arr-val:hover, .arr-val.active { background: var(--ice); color: #fff; border-color: var(--ice); }
-  .arr-idx { font-size: 11px; color: var(--text3); font-family: var(--font-code); margin-top: 4px; }
-
-  /* Matrix */
-  .matrix-wrap { overflow-x: auto; margin: 1rem 0; }
-  .matrix-grid { display: inline-grid; gap: 4px; }
-  .mat-cell {
-    width: 46px; height: 38px;
-    border: 0.5px solid var(--border2);
-    border-radius: var(--radius);
-    display: flex; align-items: center; justify-content: center;
-    font-family: var(--font-code); font-size: 13px; font-weight: 500;
-    cursor: pointer; transition: background 0.15s, color 0.15s;
-    color: var(--text);
-  }
-  .mat-cell:hover, .mat-cell.active { background: var(--ice); color: #fff; border-color: var(--ice); }
-
-  /* Function anatomy */
-  .fn-sig {
-    background: var(--bg2);
-    border: 0.5px solid var(--border2);
-    border-radius: var(--radius);
-    padding: 1rem 1.25rem;
-    font-family: var(--font-code);
-    font-size: 14px;
-    line-height: 2.2;
-    margin: 1rem 0;
-  }
-  .fn-part { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 12px; border: 0.5px solid; }
-  .fn-ret { background: var(--info-bg); color: var(--info-text); border-color: var(--info-border); }
-  .fn-nm  { background: var(--warn-bg); color: var(--warn-text); border-color: var(--warn-border); }
-  .fn-prm { background: var(--success-bg); color: var(--success-text); border-color: var(--success-border); }
-
-  /* Format specifiers */
-  .fmt-row { display: flex; align-items: center; gap: 10px; font-family: var(--font-code); font-size: 13px; margin: 6px 0; }
-  .fmt-spec { color: var(--accent); font-weight: 500; min-width: 30px; }
-  .fmt-arrow { color: var(--text3); }
-  .fmt-type { color: var(--text2); }
-
-  /* Footer */
-  .footer { padding: 3rem 0 1rem; text-align: center; }
-  .footer p { font-size: 13px; color: var(--text3); line-height: 1.8; }
-  .footer a { color: var(--ice); text-decoration: none; }
-  .footer a:hover { text-decoration: underline; }
-
-  /* Calc demo */
-  .calc-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 8px; }
-  .calc-result { font-family: var(--font-code); font-size: 20px; font-weight: 500; line-height: 34px; min-width: 48px; }
-  .calc-note { font-size: 12px; color: var(--text3); font-family: var(--font-code); min-height: 16px; }
-  .loop-controls { display: flex; gap: 8px; margin-top: 10px; }
-
-  /* Info output lines */
-  .info-out {
-    font-family: var(--font-code);
-    font-size: 13px;
-    color: var(--text2);
-    margin-top: 8px;
-    min-height: 20px;
-    transition: color 0.2s;
-  }
-  .info-out.highlight { color: var(--ice-dark); font-weight: 500; }
+/* ── MATRIX — same style as array ── */
+.mat-row{display:flex;gap:0;align-items:center;margin-bottom:-0.5px}
+.mat-row-label{font-size:11px;color:var(--text3);font-family:var(--font-c);min-width:38px;text-align:right;padding-right:8px;flex-shrink:0}
+.mat-col-header-row{display:flex;margin-bottom:4px;padding-left:38px}
+.mat-col-label{width:52px;text-align:center;font-size:11px;color:var(--text3);font-family:var(--font-c);flex-shrink:0}
+.mat-cell{width:52px;height:44px;border:.5px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:var(--font-c);font-size:14px;font-weight:600;cursor:pointer;transition:background .15s,color .15s;color:var(--text);margin:0 -0.5px;flex-shrink:0}
+/* first cell in first row */
+.mat-row:first-of-type .mat-cell:first-child{border-radius:var(--r) 0 0 0}
+.mat-row:first-of-type .mat-cell:last-child{border-radius:0 var(--r) 0 0}
+.mat-row:last-of-type .mat-cell:first-child{border-radius:0 0 0 var(--r)}
+.mat-row:last-of-type .mat-cell:last-child{border-radius:0 0 var(--r) 0}
+.mat-cell:hover,.mat-cell.sel{background:var(--ice);color:#fff;border-color:var(--ice);z-index:2;position:relative}
+.mat-cell.row-hi{background:var(--info-bg);border-color:var(--info-border);color:var(--info-text);position:relative;z-index:1}
+.mat-cell.col-hi{background:var(--ok-bg);border-color:var(--ok-border);color:var(--ok-text);position:relative;z-index:1}
+.mat-cell.sel{background:var(--ice)!important;color:#fff!important;border-color:var(--ice)!important;z-index:3!important}
+.mat-info-box{font-family:var(--font-c);font-size:13px;padding:10px 14px;background:var(--bg2);border:.5px solid var(--border);border-radius:var(--r);margin-top:10px;color:var(--text2);min-height:38px}
+.mat-info-box strong{color:var(--text)}
+.mat-grid-wrap{overflow-x:auto;margin:1rem 0;padding-bottom:4px}
 </style>
 </head>
 <body>
-
 <div class="layout">
 
-  <!-- Sidebar nav -->
-  <nav class="sidebar" id="sidebar">
-    <div class="sidebar-logo">
-      <span>Ice &amp; Steel</span>
-      <small>in the art of C</small>
-    </div>
-    <a class="nav-item" href="#s1"><span class="nav-num">01</span> Syntax basics</a>
-    <a class="nav-item" href="#s2"><span class="nav-num">02</span> Scopes</a>
-    <a class="nav-item" href="#s3"><span class="nav-num">03</span> Variables &amp; types</a>
-    <a class="nav-item" href="#s4"><span class="nav-num">04</span> Operators</a>
-    <a class="nav-item" href="#s5"><span class="nav-num">05</span> Printf &amp; scanf</a>
-    <a class="nav-item" href="#s6"><span class="nav-num">06</span> Conditions</a>
-    <a class="nav-item" href="#s7"><span class="nav-num">07</span> Loops</a>
-    <a class="nav-item" href="#s8"><span class="nav-num">08</span> Functions</a>
-    <a class="nav-item" href="#s9"><span class="nav-num">09</span> Arrays</a>
-    <a class="nav-item" href="#s10"><span class="nav-num">10</span> Matrices</a>
-  </nav>
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <span>Ice &amp; Steel</span>
+    <small>in the art of C</small>
+  </div>
+  <a class="nav-item" href="#s1"><span class="nav-num">01</span> Syntax basics</a>
+  <a class="nav-item" href="#s2"><span class="nav-num">02</span> Scopes</a>
+  <a class="nav-item" href="#s3"><span class="nav-num">03</span> Variables &amp; types</a>
+  <a class="nav-item" href="#s4"><span class="nav-num">04</span> Operators</a>
+  <a class="nav-item" href="#s5"><span class="nav-num">05</span> Printf &amp; scanf</a>
+  <a class="nav-item" href="#s6"><span class="nav-num">06</span> Conditions</a>
+  <a class="nav-item" href="#s7"><span class="nav-num">07</span> Loops</a>
+  <a class="nav-item" href="#s8"><span class="nav-num">08</span> Functions</a>
+  <a class="nav-item" href="#s9"><span class="nav-num">09</span> Arrays</a>
+  <a class="nav-item" href="#s10"><span class="nav-num">10</span> Matrices</a>
+  <a class="nav-item" href="#sandbox" style="border-top: .5px solid var(--border); margin-top: 8px; padding-top: 15px;"><span class="nav-num">∞</span> Steel Compiler</a>
+</nav>
 
-  <!-- Main content -->
-  <main class="main">
+<main class="main">
 
-    <!-- Hero -->
-    <div class="hero" id="top">
-      <div class="hero-badge">❄ Comrade General Ice Cube and RevisKor present</div>
-      <h1>Ice &amp; Steel in the<br><span>Art of C</span></h1>
-      <p>A comprehensive beginner's guide to C programming. The guide is constructed by Comrade General ICE CUBE (also known as Amr Yasser). The website is constructed by RevisKor (also known as Yahia Shahin) for the sole purpose of making C feel less like a punishment and more like an adventure. No previous experience required — just a brain and the willingness to suffer slightly.</p>
-    </div>
+<!-- HERO -->
+<div class="hero" id="top">
+  <div class="hero-badge">❄ Comrade General Ice Cube &amp; RevisKor present</div>
+  <h1>Ice &amp; Steel in the<br><span>Art of C</span></h1>
+  <p>A comprehensive beginner's guide to C programming. Written by Amr Yasser (Comrade General Ice Cube). Built by Yahia Shahin (RevisKor). No previous experience required — just a brain and the willingness to suffer slightly.</p>
+</div>
 
-    <!-- Section 1: Syntax -->
-    <section class="section" id="s1">
-      <div class="section-header">
-        <span class="section-num">01</span>
-        <h2>Syntax basics</h2>
-      </div>
-      <p class="prose">C is a <strong>compiled language</strong> — you write code, a compiler translates it into machine instructions, and then it runs. Unlike Python, C demands you be explicit about everything. That strictness is what makes it fast and what makes beginners cry.</p>
-      <p class="prose">Every C source file ends in <code>.c</code>. At minimum, your program needs exactly this:</p>
-      <div class="codeblock"><span class="cm">// include the standard input/output library</span>
+<!-- ── S1: SYNTAX ── -->
+<section class="section" id="s1">
+  <div class="section-header"><span class="section-num">01</span><h2>Syntax basics</h2></div>
+  <p class="prose">C is a <strong>compiled language</strong> — you write code, a compiler translates it into machine instructions, and then it runs. Unlike Python, C demands you be explicit about everything. That strictness is what makes it fast and what makes beginners cry.</p>
+  <p class="prose">Every C file ends in <code>.c</code>. At minimum, your program needs exactly this:</p>
+  <div class="cb"><span class="cm">// include the standard input/output library</span>
 <span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
 
 <span class="cm">// main() is the entry point — where execution begins</span>
 <span class="tp">int</span> <span class="fn">main</span>() {
     <span class="cm">// your code goes here</span>
-    <span class="kw">return</span> <span class="num">0</span>; <span class="cm">// 0 = success, non-zero = something went wrong</span>
+    <span class="kw">return</span> <span class="num">0</span>; <span class="cm">// 0 = success</span>
 }</div>
-      <div class="tip">
-        <span class="tip-icon">ℹ</span>
-        <div>Every statement ends with <code>;</code> — a semicolon. Forgetting it is the single most common beginner mistake. The compiler will yell at you, and rightly so. You have been warned.</div>
-      </div>
-      <p class="prose"><strong>Comments</strong> are for humans, ignored by the compiler. Use them generously — future you will have absolutely no memory of what you were doing.</p>
-      <div class="codeblock"><span class="cm">// single-line comment: everything after // is ignored</span>
+  <div class="tip"><span>ℹ</span><div>Every statement ends with <code>;</code>. Forgetting it is the most common beginner mistake. The compiler will yell at you, and rightly so.</div></div>
+  <p class="prose"><strong>Comments</strong> are ignored by the compiler. Write them for future-you, who will have absolutely no memory of what past-you was doing.</p>
+  <div class="cb"><span class="cm">// single-line comment</span>
 
 <span class="cm">/* multi-line comment:
-   everything between the asterisks is ignored
-   use this for longer explanations */</span></div>
-      <p class="prose">The <code>#include &lt;stdio.h&gt;</code> line brings in the <strong>standard I/O library</strong>, which gives you <code>printf</code> and <code>scanf</code> — the functions for printing output and reading input. Without it, your program can't talk to the outside world.</p>
-      <div class="tip">
-        <span class="tip-icon">ℹ</span>
-        <div>You can only have <strong>one</strong> <code>main()</code> function per project. It's the program's starting gun. More than one and the compiler won't know where to begin — and neither will you.</div>
-      </div>
-    </section>
+   write as much as you want in here */</span></div>
+  <div class="tip"><span>ℹ</span><div>You can only have <strong>one</strong> <code>main()</code> per project. It's the program's starting gun. More than one and the compiler won't know where to begin.</div></div>
+</section>
 
-    <!-- Section 2: Scopes -->
-    <section class="section" id="s2">
-      <div class="section-header">
-        <span class="section-num">02</span>
-        <h2>Scopes</h2>
-      </div>
-      <p class="prose">Curly braces <code>{ }</code> define <strong>scopes</strong> — isolated regions of code. Think of them as one-way walls: code inside can look out, but code outside cannot look in.</p>
-      <p class="prose">The key rule: a scope can access variables from any scope that <em>contains</em> it, but not from sibling scopes or inner scopes. Click each scope below to see what it can access:</p>
+<!-- ── S2: SCOPES ── -->
+<section class="section" id="s2">
+  <div class="section-header"><span class="section-num">02</span><h2>Scopes</h2></div>
+  <p class="prose">Curly braces <code>{ }</code> define <strong>scopes</strong> — isolated regions of code. A scope can see everything in the scopes that contain it, but nothing in sibling or child scopes.</p>
+  <p class="prose">Click any scope below. The variables it can see will light up, the ones it can't will fade out.</p>
 
-      <div class="demo">
-        <div class="demo-label">Scope Explorer — click to inspect</div>
-        <div class="scope-tree">
-          <div class="scope-node" onclick="showScope('A')">
-            <span class="scope-indent"></span>
-            <span class="scope-label" id="sl-A">main() — ScopeA</span>
-            <span class="scope-vars">  int a = 1</span>
-          </div>
-          <div class="scope-node" onclick="showScope('B')" style="padding-left:20px">
-            <span class="scope-indent">└─ </span>
-            <span class="scope-label" id="sl-B">ScopeB</span>
-            <span class="scope-vars">  int b = 2, int e = 5</span>
-          </div>
-          <div class="scope-node" onclick="showScope('C')" style="padding-left:40px">
-            <span class="scope-indent">└─ </span>
-            <span class="scope-label" id="sl-C">ScopeC</span>
-            <span class="scope-vars">  int c = 3</span>
-          </div>
-          <div class="scope-node" onclick="showScope('D')" style="padding-left:40px">
-            <span class="scope-indent">└─ </span>
-            <span class="scope-label" id="sl-D">ScopeD</span>
-            <span class="scope-vars">  int d = 4</span>
+  <div class="demo">
+    <div class="demo-label">Scope visibility — click a scope to inspect it</div>
+    <div id="scope-boxes" style="padding:4px 0">
+      <div class="scope-box" id="sb-A" onclick="selectScope('A')">
+        <div class="sb-label" style="color:#c07a20">ScopeA — main()</div>
+        <div class="sb-vars">
+          <span class="scope-var" data-scope="A" data-var="a">int a = 1</span>
+        </div>
+        <div style="margin-top:8px;padding:8px">
+          <div class="scope-box" id="sb-B" onclick="event.stopPropagation();selectScope('B')">
+            <div class="sb-label" style="color:#3a8fc7">ScopeB</div>
+            <div class="sb-vars">
+              <span class="scope-var" data-scope="B" data-var="b">int b = 2</span>
+              <span class="scope-var" data-scope="B" data-var="e">int e = 5</span>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <div style="flex:1;padding:8px">
+                <div class="scope-box" id="sb-C" onclick="event.stopPropagation();selectScope('C')">
+                  <div class="sb-label" style="color:#27500a">ScopeC</div>
+                  <div class="sb-vars">
+                    <span class="scope-var" data-scope="C" data-var="c">int c = 3</span>
+                  </div>
+                </div>
+              </div>
+              <div style="flex:1;padding:8px">
+                <div class="scope-box" id="sb-D" onclick="event.stopPropagation();selectScope('D')">
+                  <div class="sb-label" style="color:#8a1a8a">ScopeD</div>
+                  <div class="sb-vars">
+                    <span class="scope-var" data-scope="D" data-var="d">int d = 4</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="info-out" id="scope-result">↑ Click a scope above to see what it can access</div>
       </div>
+    </div>
+    <div class="scope-result-box" id="scope-result">↑ Click any scope to see what it can access</div>
+  </div>
 
-      <div class="codeblock"><span class="tp">int</span> <span class="fn">main</span>() {
-    <span class="cm">// ScopeA</span>
+  <div class="cb"><span class="tp">int</span> <span class="fn">main</span>() {          <span class="cm">// ScopeA</span>
     <span class="tp">int</span> a = <span class="num">1</span>;
-    {
-        <span class="cm">// ScopeB</span>
+    {                      <span class="cm">// ScopeB</span>
         <span class="tp">int</span> b = <span class="num">2</span>;
-        { <span class="tp">int</span> c = <span class="num">3</span>; } <span class="cm">// ScopeC — can see a, b, c</span>
-        { <span class="tp">int</span> d = <span class="num">4</span>; } <span class="cm">// ScopeD — can see a, b, d (NOT c)</span>
-        <span class="tp">int</span> e = <span class="num">5</span>; <span class="cm">// only ScopeB and A can see e</span>
+        { <span class="tp">int</span> c = <span class="num">3</span>; }  <span class="cm">// ScopeC</span>
+        { <span class="tp">int</span> d = <span class="num">4</span>; }  <span class="cm">// ScopeD — cannot see c</span>
+        <span class="tp">int</span> e = <span class="num">5</span>;
     }
-    <span class="cm">// here: can only see a</span>
 }</div>
+  <div class="warn"><span>⚠</span><div>A variable declared inside a scope <strong>does not exist</strong> outside of it. It's destroyed when the scope closes. Try to use it outside and the compiler refuses.</div></div>
+</section>
 
-      <div class="warn">
-        <span class="warn-icon">⚠</span>
-        <div>A variable declared inside a scope <strong>does not exist</strong> outside of it — it's destroyed when the scope closes. Try to use it outside and the compiler will refuse.</div>
-      </div>
-    </section>
-
-    <!-- Section 3: Variables -->
-    <section class="section" id="s3">
-      <div class="section-header">
-        <span class="section-num">03</span>
-        <h2>Variables &amp; data types</h2>
-      </div>
-      <p class="prose">A variable is a named box in memory that holds a value. C is <strong>statically typed</strong> — you must declare <em>what kind</em> of value the box will hold before using it. No surprises. No guessing. The compiler needs to know.</p>
-      <p class="prose">Declaration syntax: <code>type name = value;</code></p>
-
-      <table class="dtable">
-        <thead>
-          <tr><th>Type</th><th>Stores</th><th>Example</th><th>Notes</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>int</td><td>whole numbers</td><td><code>int x = 42;</code></td><td>No decimals — assigning 12.9 gives you 12</td></tr>
-          <tr><td>float</td><td>decimals (~7 sig. digits)</td><td><code>float f = 3.14;</code></td><td>Good for most decimal needs</td></tr>
-          <tr><td>double</td><td>decimals (~15 sig. digits)</td><td><code>double d = 3.14159265;</code></td><td>More precise, preferred for math</td></tr>
-          <tr><td>char</td><td>single character</td><td><code>char c = 'A';</code></td><td>Stored internally as integer 0–255</td></tr>
-        </tbody>
-      </table>
-
-      <div class="codeblock"><span class="tp">int</span>    age   = <span class="num">21</span>;
+<!-- ── S3: VARIABLES ── -->
+<section class="section" id="s3">
+  <div class="section-header"><span class="section-num">03</span><h2>Variables &amp; data types</h2></div>
+  <p class="prose">A variable is a named box in memory that holds a value. C is <strong>statically typed</strong> — you must declare what kind of value the box holds before using it. No guessing. The compiler needs to know.</p>
+  <table class="dtable">
+    <thead><tr><th>Type</th><th>Stores</th><th>Example</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>int</td><td>whole numbers</td><td><code>int x = 42;</code></td><td>No decimals — assigning 12.9 gives you 12</td></tr>
+      <tr><td>float</td><td>decimals (~7 digits)</td><td><code>float f = 3.14;</code></td><td>Good for most decimal needs</td></tr>
+      <tr><td>double</td><td>decimals (~15 digits)</td><td><code>double d = 3.14159265;</code></td><td>More precise, preferred for math</td></tr>
+      <tr><td>char</td><td>single character</td><td><code>char c = 'A';</code></td><td>Stored internally as integer 0–255</td></tr>
+    </tbody>
+  </table>
+  <div class="cb"><span class="tp">int</span>    age   = <span class="num">21</span>;
 <span class="tp">float</span>  gpa   = <span class="num">3.7</span>;
 <span class="tp">double</span> pi    = <span class="num">3.14159265358979</span>;
 <span class="tp">char</span>   grade = <span class="str">'A'</span>;
 
-<span class="cm">// declare multiple variables of the same type</span>
-<span class="tp">int</span> x = <span class="num">1</span>, y = <span class="num">2</span>, z = <span class="num">3</span>;
+<span class="cm">// declare multiple at once</span>
+<span class="tp">int</span> x = <span class="num">1</span>, y = <span class="num">2</span>, z = <span class="num">3</span>;</div>
+  <div class="tip"><span>ℹ</span><div>Dividing <code>5/2</code> gives <code>2</code> (integer division). Dividing <code>5.0/2</code> gives <code>2.5</code>. Always check your types when doing math.</div></div>
+</section>
 
-<span class="cm">// a variable has:
-//   value   → the data stored (what you assigned)
-//   address → where in memory it lives (accessed with &amp;variable)</span></div>
+<!-- ── S4: OPERATORS ── -->
+<section class="section" id="s4">
+  <div class="section-header"><span class="section-num">04</span><h2>Operators &amp; arithmetic</h2></div>
+  <p class="prose">Click any operator card to see a detailed example. Then try the live calculator below to see exactly how C handles the math — including the integer division quirk that catches everyone.</p>
 
-      <div class="tip">
-        <span class="tip-icon">ℹ</span>
-        <div>Dividing <code>5/2</code> gives <code>2</code> (integer division truncates). Dividing <code>5.0/2</code> gives <code>2.5</code>. Always check your types when doing math — this trips up everyone at least once.</div>
-      </div>
-    </section>
+  <div class="ops-grid" id="ops-grid">
+    <div class="op-card" onclick="pickOp(this,'+'     )"><span class="op-sym">+</span><span class="op-name">addition</span><div class="op-ex">5 + 3 = 8</div></div>
+    <div class="op-card" onclick="pickOp(this,'-'     )"><span class="op-sym">-</span><span class="op-name">subtraction</span><div class="op-ex">10 − 4 = 6</div></div>
+    <div class="op-card" onclick="pickOp(this,'*'     )"><span class="op-sym">*</span><span class="op-name">multiply</span><div class="op-ex">3 × 7 = 21</div></div>
+    <div class="op-card" onclick="pickOp(this,'/'     )"><span class="op-sym">/</span><span class="op-name">division</span><div class="op-ex">7 / 2 = 3 ⚠</div></div>
+    <div class="op-card" onclick="pickOp(this,'%'     )"><span class="op-sym">%</span><span class="op-name">modulus</span><div class="op-ex">7 % 3 = 1</div></div>
+    <div class="op-card" onclick="pickOp(this,'++'    )"><span class="op-sym">++</span><span class="op-name">increment</span><div class="op-ex">x++ / ++x</div></div>
+    <div class="op-card" onclick="pickOp(this,'--'    )"><span class="op-sym">--</span><span class="op-name">decrement</span><div class="op-ex">x-- / --x</div></div>
+    <div class="op-card" onclick="pickOp(this,'+='    )"><span class="op-sym">+=</span><span class="op-name">compound</span><div class="op-ex">x += 3</div></div>
+  </div>
 
-    <!-- Section 4: Operators -->
-    <section class="section" id="s4">
-      <div class="section-header">
-        <span class="section-num">04</span>
-        <h2>Operators &amp; arithmetic</h2>
-      </div>
-      <p class="prose">C supports all the standard arithmetic operators. Click any card below for a code example:</p>
+  <div class="demo" id="op-demo" style="display:none">
+    <div class="demo-label" id="op-demo-title">Example</div>
+    <div class="cb" id="op-code" style="margin:0"></div>
+    <div id="op-note" style="font-size:13px;margin-top:10px;display:none;padding:8px 12px;background:var(--warn-bg);border-left:3px solid var(--warn-border);border-radius:0 var(--r) var(--r) 0;color:var(--warn-text)"></div>
+  </div>
 
-      <div class="ops-grid">
-        <div class="op-card" onclick="showOp(this,'+',      'int x = 5 + 3;\n// x = 8')">
-          <span class="op-sym">+</span><span class="op-name">addition</span>
-          <div class="op-ex">5 + 3 = 8</div>
-        </div>
-        <div class="op-card" onclick="showOp(this,'-',      'int x = 10 - 4;\n// x = 6')">
-          <span class="op-sym">-</span><span class="op-name">subtraction</span>
-          <div class="op-ex">10 - 4 = 6</div>
-        </div>
-        <div class="op-card" onclick="showOp(this,'*',      'int x = 3 * 7;\n// x = 21')">
-          <span class="op-sym">*</span><span class="op-name">multiplication</span>
-          <div class="op-ex">3 * 7 = 21</div>
-        </div>
-        <div class="op-card" onclick="showOp(this,'/',      'int x = 7 / 2;\n// x = 3 (int division!)\ndouble y = 7.0 / 2;\n// y = 3.5')">
-          <span class="op-sym">/</span><span class="op-name">division</span>
-          <div class="op-ex">7 / 2 = 3 (int!)</div>
-        </div>
-        <div class="op-card" onclick="showOp(this,'%',      'int x = 7 % 3;\n// x = 1 (remainder)\n// useful for even/odd: n % 2 == 0')">
-          <span class="op-sym">%</span><span class="op-name">modulus (remainder)</span>
-          <div class="op-ex">7 % 3 = 1</div>
-        </div>
-        <div class="op-card" onclick="showOp(this,'++',     'int x = 5;\nx++;  // post: use 5, THEN x becomes 6\n++x;  // pre:  x becomes 6 first, then use 6')">
-          <span class="op-sym">++</span><span class="op-name">increment</span>
-          <div class="op-ex">x++ or ++x</div>
-        </div>
-        <div class="op-card" onclick="showOp(this,'--',     'int x = 5;\nx--;  // post: use 5, THEN x becomes 4\n--x;  // pre:  x becomes 4 first, then use 4')">
-          <span class="op-sym">--</span><span class="op-name">decrement</span>
-          <div class="op-ex">x-- or --x</div>
-        </div>
-        <div class="op-card" onclick="showOp(this,'+=',     'int x = 5;\nx += 3;  // x = x + 3 = 8\nx -= 2;  // x = x - 2 = 6\nx *= 4;  // x = x * 4 = 24\nx /= 3;  // x = x / 3 = 8')">
-          <span class="op-sym">+=</span><span class="op-name">compound assignment</span>
-          <div class="op-ex">x += 3 → x = x+3</div>
-        </div>
-      </div>
+  <p class="prose" style="margin-top:1.25rem"><strong>Live C calculator</strong> — type any two integers and see exactly what C computes:</p>
+  <div class="calc-wrap">
+    <input class="calc-input" type="number" id="ca" value="10" oninput="doCalc()">
+    <select class="calc-op" id="cop" onchange="doCalc()">
+      <option>+</option><option>-</option><option value="*">*</option><option>/</option><option>%</option>
+    </select>
+    <input class="calc-input-b" type="number" id="cb2" value="3" oninput="doCalc()">
+    <span class="calc-eq">=</span>
+    <div class="calc-result-box" id="cres">13</div>
+  </div>
+  <div class="calc-note" id="cnote"></div>
 
-      <div class="demo" id="op-demo" style="display:none">
-        <div class="demo-label">Example</div>
-        <div class="codeblock" id="op-code" style="margin:0"></div>
-      </div>
-
-      <p class="prose" style="margin-top:1.25rem"><strong>Operator priority</strong> (highest first, same-priority goes left to right):</p>
-      <div class="codeblock"><span class="cm">// 1. pre-increment/decrement:  ++x,  --x</span>
+  <p class="prose" style="margin-top:1.25rem"><strong>Priority order</strong> (highest → lowest, same priority goes left to right):</p>
+  <div class="cb"><span class="cm">// 1. pre-increment/decrement:  ++x, --x</span>
 <span class="cm">// 2. parentheses:              ()</span>
-<span class="cm">// 3. * / %                     (left to right)</span>
-<span class="cm">// 4. + -                       (left to right)</span>
+<span class="cm">// 3. * / %                     left to right</span>
+<span class="cm">// 4. + -                       left to right</span>
 
 <span class="tp">int</span> x = <span class="num">5</span> % <span class="num">2</span> * <span class="num">3</span> / <span class="num">2</span>;
-<span class="cm">// step 1: 5 % 2 = 1</span>
-<span class="cm">// step 2: 1 * 3 = 3</span>
-<span class="cm">// step 3: 3 / 2 = 1  ← integer division</span>
-<span class="cm">// result: x = 1</span></div>
+<span class="cm">// 5 % 2 = 1  →  1 * 3 = 3  →  3 / 2 = 1  →  x = 1</span></div>
+</section>
 
-      <div class="demo">
-        <div class="demo-label">Live arithmetic calculator</div>
-        <div class="calc-row">
-          <input type="number" id="num-a" value="10" style="width:72px" oninput="calcLive()">
-          <select id="num-op" style="width:60px" onchange="calcLive()">
-            <option>+</option><option>-</option>
-            <option value="*">*</option>
-            <option>/</option><option>%</option>
-          </select>
-          <input type="number" id="num-b" value="3" style="width:72px" oninput="calcLive()">
-          <span style="font-family:var(--font-code);font-size:14px;color:var(--text3)">=</span>
-          <span class="calc-result" id="calc-result">13</span>
-        </div>
-        <div class="calc-note" id="calc-note"></div>
+<!-- ── S5: PRINTF / SCANF ── -->
+<section class="section" id="s5">
+  <div class="section-header"><span class="section-num">05</span><h2>Printf &amp; scanf</h2></div>
+  <p class="prose"><code>printf</code> prints to the terminal. <code>scanf</code> reads from the user. Both use <strong>format specifiers</strong> as typed placeholders inside the string.</p>
+
+  <div class="demo">
+    <div class="demo-label">Printf builder — edit the values and watch the output update</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-family:var(--font-c);font-size:13px;margin-bottom:12px">
+      <span style="color:var(--text2)">name =</span>
+      <input type="text" id="pf-name" value="Ahmed" style="width:90px;font-family:var(--font-c);font-size:13px;padding:4px 8px;background:var(--bg2);border:.5px solid var(--border2);border-radius:var(--r);color:var(--text)" oninput="buildPrintf()">
+      <span style="color:var(--text2)">score =</span>
+      <input type="number" id="pf-score" value="87" style="width:72px;font-family:var(--font-c);font-size:13px;padding:4px 8px;background:var(--bg2);border:.5px solid var(--border2);border-radius:var(--r);color:var(--text)" oninput="buildPrintf()">
+      <span style="color:var(--text2)">gpa =</span>
+      <input type="number" id="pf-gpa" value="3.75" step="0.01" style="width:80px;font-family:var(--font-c);font-size:13px;padding:4px 8px;background:var(--bg2);border:.5px solid var(--border2);border-radius:var(--r);color:var(--text)" oninput="buildPrintf()">
+    </div>
+    <div class="cb" id="pf-code" style="margin:0 0 8px"></div>
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);font-family:var(--font-c);margin-bottom:4px">Terminal output</div>
+    <div id="pf-output" style="font-family:var(--font-c);font-size:13px;background:var(--bg3);border:.5px solid var(--border);border-radius:var(--r);padding:10px 14px;color:var(--text2);line-height:1.9;white-space:pre"></div>
+  </div>
+
+  <div style="margin:1rem 0">
+    <div class="fmt-row"><span class="fmt-spec">%d</span><span class="fmt-arrow">→</span><span class="fmt-type">integer (int)</span></div>
+    <div class="fmt-row"><span class="fmt-spec">%f</span><span class="fmt-arrow">→</span><span class="fmt-type">float or double — use <code>%.2f</code> for 2 decimal places</span></div>
+    <div class="fmt-row"><span class="fmt-spec">%c</span><span class="fmt-arrow">→</span><span class="fmt-type">single character (char)</span></div>
+    <div class="fmt-row"><span class="fmt-spec">%s</span><span class="fmt-arrow">→</span><span class="fmt-type">string (char array)</span></div>
+    <div class="fmt-row"><span class="fmt-spec">\n</span><span class="fmt-arrow">→</span><span class="fmt-type">newline — printf won't add one automatically</span></div>
+  </div>
+
+  <div class="cb"><span class="cm">// scanf reads INTO variable addresses using &amp;</span>
+<span class="tp">int</span>  n;
+<span class="tp">char</span> c;
+<span class="fn">scanf</span>(<span class="str">"%d"</span>, &amp;n);    <span class="cm">// reads an integer into n</span>
+<span class="fn">scanf</span>(<span class="str">" %c"</span>, &amp;c);  <span class="cm">// space before %c skips leftover newline</span></div>
+  <div class="warn"><span>⚠</span><div>Always put a space before <code>%c</code> in scanf: write <code>" %c"</code>. Without it, scanf picks up the newline from the previous Enter key and your variable gets garbage.</div></div>
+</section>
+
+<!-- ── S6: CONDITIONS ── -->
+<section class="section" id="s6">
+  <div class="section-header"><span class="section-num">06</span><h2>Conditions &amp; if statements</h2></div>
+  <p class="prose">Comparisons produce <strong>1 (true)</strong> or <strong>0 (false)</strong>. Drag the slider — watch exactly which branch activates and why, in real time.</p>
+
+  <div class="demo">
+    <div class="demo-label">If / else visualizer</div>
+    <div class="if-slider-wrap">
+      <span class="if-slider-label">score =</span>
+      <input type="range" min="0" max="100" value="72" id="score-sl" oninput="runIf()">
+      <span class="if-score-display" id="score-disp">72</span>
+    </div>
+    <div class="if-chain" id="if-chain">
+      <div class="if-row" id="if-r0">
+        <div class="if-row-head"><span class="kw2">if</span><span class="cond">&nbsp;(score &gt;= 90)</span><span class="if-arrow" id="if-arr0">▶ runs</span></div>
+        <div class="if-row-body">printf(<span class="str">"Excellent\n"</span>); &nbsp;<span class="cm">// ✓ this line executes</span></div>
       </div>
-    </section>
-
-    <!-- Section 5: Printf & scanf -->
-    <section class="section" id="s5">
-      <div class="section-header">
-        <span class="section-num">05</span>
-        <h2>Printf &amp; scanf</h2>
+      <div class="if-row" id="if-r1">
+        <div class="if-row-head"><span class="kw2">else if</span><span class="cond">&nbsp;(score &gt;= 75)</span><span class="if-arrow" id="if-arr1">▶ runs</span></div>
+        <div class="if-row-body">printf(<span class="str">"Good\n"</span>);</div>
       </div>
-      <p class="prose"><code>printf</code> prints output to the terminal. <code>scanf</code> reads input from the user. Both live inside <code>stdio.h</code> and both use <strong>format specifiers</strong> as placeholders for values.</p>
-
-      <div style="margin:1rem 0">
-        <div class="fmt-row"><span class="fmt-spec">%d</span><span class="fmt-arrow">→</span><span class="fmt-type">integer (int)</span></div>
-        <div class="fmt-row"><span class="fmt-spec">%f</span><span class="fmt-arrow">→</span><span class="fmt-type">float or double (use %.2f for 2 decimal places)</span></div>
-        <div class="fmt-row"><span class="fmt-spec">%c</span><span class="fmt-arrow">→</span><span class="fmt-type">single character (char)</span></div>
-        <div class="fmt-row"><span class="fmt-spec">%s</span><span class="fmt-arrow">→</span><span class="fmt-type">string (char array)</span></div>
-        <div class="fmt-row"><span class="fmt-spec">\n</span><span class="fmt-arrow">→</span><span class="fmt-type">newline — printf won't add one automatically</span></div>
-        <div class="fmt-row"><span class="fmt-spec">\t</span><span class="fmt-arrow">→</span><span class="fmt-type">tab character</span></div>
+      <div class="if-row" id="if-r2">
+        <div class="if-row-head"><span class="kw2">else if</span><span class="cond">&nbsp;(score &gt;= 60)</span><span class="if-arrow" id="if-arr2">▶ runs</span></div>
+        <div class="if-row-body">printf(<span class="str">"Pass\n"</span>);</div>
       </div>
-
-      <div class="codeblock"><span class="tp">int</span>   score = <span class="num">95</span>;
-<span class="tp">float</span> avg   = <span class="num">3.75</span>;
-<span class="tp">char</span>  grade = <span class="str">'A'</span>;
-
-<span class="fn">printf</span>(<span class="str">"Score: %d, GPA: %f, Grade: %c\n"</span>, score, avg, grade);
-<span class="cm">// output: Score: 95, GPA: 3.750000, Grade: A</span>
-
-<span class="fn">printf</span>(<span class="str">"GPA: %.2f\n"</span>, avg); <span class="cm">// .2f = exactly 2 decimal places</span>
-<span class="cm">// output: GPA: 3.75</span>
-
-<span class="fn">printf</span>(<span class="str">"%d + %d = %d\n"</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">3</span>+<span class="num">4</span>);
-<span class="cm">// output: 3 + 4 = 7</span></div>
-
-      <div class="codeblock"><span class="cm">// scanf reads values INTO variable addresses using &amp;</span>
-<span class="tp">int</span>   n;
-<span class="tp">float</span> f;
-<span class="tp">char</span>  c;
-
-<span class="fn">scanf</span>(<span class="str">"%d"</span>, &amp;n);     <span class="cm">// reads an integer into n</span>
-<span class="fn">scanf</span>(<span class="str">"%f"</span>, &amp;f);     <span class="cm">// reads a float into f</span>
-<span class="fn">scanf</span>(<span class="str">" %c"</span>, &amp;c);    <span class="cm">// space before %c skips leftover newline</span>
-
-<span class="cm">// reading multiple values at once</span>
-<span class="fn">scanf</span>(<span class="str">"%d %d"</span>, &amp;n, &amp;f);</div>
-
-      <div class="warn">
-        <span class="warn-icon">⚠</span>
-        <div>Always put a space before <code>%c</code> in scanf: write <code>" %c"</code> not <code>"%c"</code>. Without the space, scanf picks up the newline character from the previous Enter keypress and your variable gets junk. Classic gotcha, catches everyone.</div>
+      <div class="if-row" id="if-r3">
+        <div class="if-row-head"><span class="kw2">else</span><span class="if-arrow" id="if-arr3">▶ runs</span></div>
+        <div class="if-row-body">printf(<span class="str">"Study harder\n"</span>);</div>
       </div>
-    </section>
+    </div>
+    <div id="if-explain" style="font-size:13px;color:var(--text2);padding:8px 12px;background:var(--bg2);border:.5px solid var(--border);border-radius:var(--r);font-family:var(--font-c)"></div>
+  </div>
 
-    <!-- Section 6: Conditions -->
-    <section class="section" id="s6">
-      <div class="section-header">
-        <span class="section-num">06</span>
-        <h2>Conditions &amp; if statements</h2>
-      </div>
-      <p class="prose">Comparisons in C produce <strong>1 (true)</strong> or <strong>0 (false)</strong>. Combine them with <code>if</code>, <code>else if</code>, and <code>else</code> to make decisions.</p>
+  <table class="dtable">
+    <thead><tr><th>Operator</th><th>Meaning</th><th>Example</th></tr></thead>
+    <tbody>
+      <tr><td>==</td><td>equal to</td><td><code>x == 5</code></td></tr>
+      <tr><td>!=</td><td>not equal</td><td><code>x != 0</code></td></tr>
+      <tr><td>&gt; / &lt;</td><td>greater / less</td><td><code>x &gt; 10</code></td></tr>
+      <tr><td>&gt;= / &lt;=</td><td>greater/less or equal</td><td><code>x &lt;= 100</code></td></tr>
+      <tr><td>&amp;&amp;</td><td>AND — both must be true</td><td><code>x &gt; 0 &amp;&amp; x &lt; 10</code></td></tr>
+      <tr><td>||</td><td>OR — at least one true</td><td><code>x == 0 || x == 1</code></td></tr>
+      <tr><td>!</td><td>NOT — inverts true/false</td><td><code>!(x == 5)</code></td></tr>
+    </tbody>
+  </table>
 
-      <table class="dtable">
-        <thead><tr><th>Operator</th><th>Meaning</th><th>Example</th></tr></thead>
-        <tbody>
-          <tr><td>==</td><td>equal to</td><td><code>x == 5</code></td></tr>
-          <tr><td>!=</td><td>not equal to</td><td><code>x != 0</code></td></tr>
-          <tr><td>&gt; / &lt;</td><td>greater / less than</td><td><code>x &gt; 10</code></td></tr>
-          <tr><td>&gt;= / &lt;=</td><td>greater/less or equal</td><td><code>x &lt;= 100</code></td></tr>
-          <tr><td>&amp;&amp;</td><td>AND — both must be true</td><td><code>x &gt; 0 &amp;&amp; x &lt; 10</code></td></tr>
-          <tr><td>||</td><td>OR — at least one true</td><td><code>x == 0 || x == 1</code></td></tr>
-          <tr><td>!</td><td>NOT — inverts true/false</td><td><code>!(x == 5)</code></td></tr>
-        </tbody>
-      </table>
-
-      <p class="prose">Drag the slider to watch which branch activates:</p>
-
-      <div class="demo">
-        <div class="demo-label">If/else visualizer</div>
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:1rem">
-          <label style="font-size:13px;color:var(--text2);font-family:var(--font-code)">score =</label>
-          <input type="range" min="0" max="100" value="72" id="score-slider" oninput="updateIf()" style="flex:1">
-          <span id="score-val" style="font-family:var(--font-code);font-size:14px;font-weight:500;min-width:28px">72</span>
-        </div>
-        <div class="if-flow">
-          <div class="if-block" id="if-a"><div class="if-label">if</div>score &gt;= 90 → "Excellent"</div>
-          <div class="if-block" id="if-b"><div class="if-label">else if</div>score &gt;= 75 → "Good"</div>
-          <div class="if-block" id="if-c"><div class="if-label">else if</div>score &gt;= 60 → "Pass"</div>
-          <div class="if-block" id="if-d"><div class="if-label">else</div>score &lt; 60 → "Study harder"</div>
-        </div>
-        <div class="info-out" id="if-output"></div>
-      </div>
-
-      <div class="codeblock"><span class="tp">int</span> score = <span class="num">72</span>;
-<span class="kw">if</span> (score >= <span class="num">90</span>) {
-    <span class="fn">printf</span>(<span class="str">"Excellent\n"</span>);
-} <span class="kw">else if</span> (score >= <span class="num">75</span>) {
-    <span class="fn">printf</span>(<span class="str">"Good\n"</span>);
-} <span class="kw">else if</span> (score >= <span class="num">60</span>) {
-    <span class="fn">printf</span>(<span class="str">"Pass\n"</span>);
-} <span class="kw">else</span> {
-    <span class="fn">printf</span>(<span class="str">"Study harder\n"</span>);
-}</div>
-
-      <p class="prose" style="margin-top:1.25rem">For checking one variable against a specific list of values, <strong>switch-case</strong> is cleaner:</p>
-
-      <div class="codeblock"><span class="kw">switch</span> (day) {
+  <p class="prose">For checking one variable against a specific list of values, <strong>switch-case</strong> is cleaner than a long chain of else-ifs:</p>
+  <div class="cb"><span class="kw">switch</span> (day) {
     <span class="kw">case</span> <span class="num">1</span>:  <span class="fn">printf</span>(<span class="str">"Monday\n"</span>);   <span class="kw">break</span>;
     <span class="kw">case</span> <span class="num">2</span>:  <span class="fn">printf</span>(<span class="str">"Tuesday\n"</span>);  <span class="kw">break</span>;
-    <span class="kw">case</span> <span class="num">6</span>:  <span class="cm">/* intentional fall-through */</span>
-    <span class="kw">case</span> <span class="num">7</span>:  <span class="fn">printf</span>(<span class="str">"Weekend!\n"</span>);  <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="num">6</span>:  <span class="cm">/* falls through */</span>
+    <span class="kw">case</span> <span class="num">7</span>:  <span class="fn">printf</span>(<span class="str">"Weekend!\n"</span>); <span class="kw">break</span>;
     <span class="kw">default</span>: <span class="fn">printf</span>(<span class="str">"Unknown\n"</span>);
 }</div>
+  <div class="warn"><span>⚠</span><div>Always write <code>break;</code> at the end of each case. Without it, execution falls through to the next case — sometimes useful (weekend above), almost always a bug.</div></div>
+</section>
 
-      <div class="warn">
-        <span class="warn-icon">⚠</span>
-        <div>Always write <code>break;</code> at the end of each case. Without it, execution <em>falls through</em> to the next case regardless of the value — sometimes intentional (as above), usually a bug. Don't forget it.</div>
+<!-- ── S7: LOOPS ── -->
+<section class="section" id="s7">
+  <div class="section-header"><span class="section-num">07</span><h2>Loops</h2></div>
+  <p class="prose">Loops repeat a block of code. C has three types. Use the stepper below to walk through a loop one line at a time — watch the variables change and the output build up.</p>
+
+  <div class="demo">
+    <div class="demo-label">Loop code stepper — step through line by line</div>
+    <div class="loop-type-tabs">
+      <button class="loop-tab active" onclick="switchLoop('for',this)">for loop</button>
+      <button class="loop-tab" onclick="switchLoop('while',this)">while loop</button>
+      <button class="loop-tab" onclick="switchLoop('dowhile',this)">do-while</button>
+    </div>
+    <div style="background:var(--bg3);border:.5px solid var(--border);border-bottom:none;padding:10px 14px;display:flex;gap:16px;flex-wrap:wrap;align-items:center">
+      <div id="loop-params"></div>
+    </div>
+    <div class="loop-code-panel" id="loop-code-panel"></div>
+    <div class="loop-state-panel">
+      <div class="loop-var" id="lv-i" style="display:none">
+        <div class="loop-var-name">i</div>
+        <div class="loop-var-val" id="lv-i-val">0</div>
       </div>
-
-      <p class="prose"><strong>Short-circuit evaluation:</strong> With <code>&amp;&amp;</code>, if the left side is false, the right side never runs. With <code>||</code>, if the left is true, the right never runs. This matters when the right side has side effects like <code>++x</code>.</p>
-    </section>
-
-    <!-- Section 7: Loops -->
-    <section class="section" id="s7">
-      <div class="section-header">
-        <span class="section-num">07</span>
-        <h2>Loops</h2>
+      <div class="loop-var" id="lv-n" style="display:none">
+        <div class="loop-var-name">n</div>
+        <div class="loop-var-val" id="lv-n-val">5</div>
       </div>
-      <p class="prose">Loops repeat a block of code. C has three types — all can technically do the same job, but each has a natural home.</p>
-
-      <div class="demo">
-        <div class="demo-label">For loop visualizer</div>
-        <div style="font-family:var(--font-code);font-size:13px;color:var(--text2);margin-bottom:8px">
-          for(int i = 0; i &lt; <span id="loop-max-label">8</span>; i++)
-        </div>
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-          <label style="font-size:12px;color:var(--text3)">limit:</label>
-          <input type="range" min="3" max="14" value="8" id="loop-size" oninput="resetLoop()" style="width:120px">
-          <span id="loop-size-out" style="font-family:var(--font-code);font-size:12px;color:var(--text3)">8</span>
-        </div>
-        <div class="loop-viz" id="loop-viz"></div>
-        <div class="progress-bar"><div class="progress-fill" id="loop-progress" style="width:0%"></div></div>
-        <div style="font-family:var(--font-code);font-size:12px;color:var(--text2);margin:6px 0">
-          i = <span id="loop-i">0</span> &nbsp;|&nbsp; iterations done: <span id="loop-count">0</span>
-        </div>
-        <div class="loop-controls">
-          <button onclick="stepLoop()">Step →</button>
-          <button onclick="playLoop()">Play ▶</button>
-          <button onclick="resetLoop()">Reset ↺</button>
-        </div>
+      <div class="loop-var" id="lv-cond">
+        <div class="loop-var-name">condition</div>
+        <div class="loop-var-val" id="lv-cond-val" style="font-size:16px">—</div>
       </div>
+      <div class="loop-var" style="margin-left:auto;text-align:right">
+        <div class="loop-var-name">iteration</div>
+        <div class="loop-var-val" id="lv-iter">0</div>
+      </div>
+    </div>
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);font-family:var(--font-c);margin-top:10px;margin-bottom:4px">Terminal output so far</div>
+    <div class="loop-output" id="loop-output">—</div>
+    <div class="loop-controls">
+      <button onclick="loopStep()" id="btn-step">Step →</button>
+      <button class="btn-primary" onclick="loopPlay()" id="btn-play">Play ▶</button>
+      <button onclick="loopReset()">Reset ↺</button>
+      <div class="loop-speed">speed <input type="range" min="100" max="900" value="500" id="loop-spd" style="width:70px"></div>
+    </div>
+  </div>
 
-      <div class="codeblock"><span class="cm">// FOR LOOP — use when you know how many times upfront</span>
+  <div class="cb"><span class="cm">// FOR — use when you know how many times upfront</span>
 <span class="kw">for</span> (<span class="tp">int</span> i = <span class="num">0</span>; i &lt; <span class="num">5</span>; i++) {
-    <span class="fn">printf</span>(<span class="str">"%d\n"</span>, i);  <span class="cm">// prints 0 1 2 3 4</span>
-}
-<span class="cm">// parts: (initializer ; condition ; step)</span>
-<span class="cm">// omit condition → infinite loop: for(;;)</span>
-
-<span class="cm">// WHILE LOOP — use when condition-driven, count unknown</span>
-<span class="tp">int</span> n = <span class="num">100</span>;
-<span class="kw">while</span> (n &gt; <span class="num">1</span>) {
-    n /= <span class="num">2</span>;
+    <span class="fn">printf</span>(<span class="str">"%d\n"</span>, i);
 }
 
-<span class="cm">// DO-WHILE — guarantees at least one execution</span>
-<span class="tp">int</span> input;
+<span class="cm">// WHILE — use when condition-driven, count unknown</span>
+<span class="tp">int</span> n = <span class="num">5</span>;
+<span class="kw">while</span> (n &gt; <span class="num">0</span>) {
+    <span class="fn">printf</span>(<span class="str">"%d\n"</span>, n);
+    n--;
+}
+
+<span class="cm">// DO-WHILE — runs at least once, checks condition after</span>
+<span class="tp">int</span> n = <span class="num">1</span>;
 <span class="kw">do</span> {
-    <span class="fn">printf</span>(<span class="str">"Enter a positive number: "</span>);
-    <span class="fn">scanf</span>(<span class="str">"%d"</span>, &amp;input);
-} <span class="kw">while</span> (input &lt;= <span class="num">0</span>); <span class="cm">// keep asking until valid</span></div>
+    <span class="fn">printf</span>(<span class="str">"%d\n"</span>, n);
+    n++;
+} <span class="kw">while</span> (n &lt;= <span class="num">5</span>);</div>
 
-      <div class="codeblock"><span class="cm">// break — exits the loop immediately</span>
-<span class="kw">for</span> (<span class="tp">int</span> i = <span class="num">0</span>; i &lt; <span class="num">10</span>; i++) {
-    <span class="kw">if</span> (i == <span class="num">5</span>) <span class="kw">break</span>;  <span class="cm">// stops at 5</span>
-    <span class="fn">printf</span>(<span class="str">"%d\n"</span>, i);   <span class="cm">// prints 0 1 2 3 4</span>
-}
+  <div class="tip"><span>ℹ</span><div><code>break</code> exits the loop immediately. <code>continue</code> skips the rest of the current iteration and jumps to the next one. <code>break</code> also works inside switch-case.</div></div>
+</section>
 
-<span class="cm">// continue — skips the rest of THIS iteration</span>
-<span class="kw">for</span> (<span class="tp">int</span> i = <span class="num">0</span>; i &lt; <span class="num">6</span>; i++) {
-    <span class="kw">if</span> (i % <span class="num">2</span> == <span class="num">0</span>) <span class="kw">continue</span>;  <span class="cm">// skip evens</span>
-    <span class="fn">printf</span>(<span class="str">"%d\n"</span>, i);            <span class="cm">// prints 1 3 5</span>
-}</div>
-    </section>
+<!-- ── S8: FUNCTIONS ── -->
+<section class="section" id="s8">
+  <div class="section-header"><span class="section-num">08</span><h2>Functions</h2></div>
+  <p class="prose">A function is a reusable named block of code. Write it once, call it anywhere. This is the single most important habit in programming — write it once, use it many times, fix it in one place.</p>
 
-    <!-- Section 8: Functions -->
-    <section class="section" id="s8">
-      <div class="section-header">
-        <span class="section-num">08</span>
-        <h2>Functions</h2>
-      </div>
-      <p class="prose">A function is a reusable named block of code. Instead of copying the same logic everywhere, you write it once and call it by name. This is the single most important habit in all of programming — write it once, use it many times, fix it in one place.</p>
+  <div class="fn-sig">
+    <span class="fn-part fn-ret">int</span>&nbsp;&nbsp;
+    <span class="fn-part fn-nm">sumTwo</span>&nbsp;
+    (<span class="fn-part fn-prm">int x</span>,&nbsp;<span class="fn-part fn-prm">int y</span>) { ... }
+    <div style="margin-top:10px;font-size:11px;display:flex;gap:16px;flex-wrap:wrap">
+      <span><span class="fn-part fn-ret" style="font-size:10px">return type</span> &nbsp;what the function sends back</span>
+      <span><span class="fn-part fn-nm" style="font-size:10px">function name</span> &nbsp;how you call it</span>
+      <span><span class="fn-part fn-prm" style="font-size:10px">parameters</span> &nbsp;input values it needs</span>
+    </div>
+  </div>
 
-      <div class="fn-sig">
-        <span class="fn-part fn-ret">int</span>&nbsp;&nbsp;
-        <span class="fn-part fn-nm">sumTwo</span>&nbsp;
-        (<span class="fn-part fn-prm">int x</span>,&nbsp;<span class="fn-part fn-prm">int y</span>) { ... }
-        <div style="margin-top:10px;font-size:11px;display:flex;gap:16px;flex-wrap:wrap">
-          <span><span class="fn-part fn-ret" style="font-size:10px">return type</span> &nbsp;what the function sends back</span>
-          <span><span class="fn-part fn-nm" style="font-size:10px">function name</span> &nbsp;how you call it</span>
-          <span><span class="fn-part fn-prm" style="font-size:10px">parameters</span> &nbsp;input values it needs</span>
-        </div>
-      </div>
-
-      <div class="codeblock"><span class="cm">// prototype — declare BEFORE main if defined after</span>
-<span class="tp">int</span>  <span class="fn">sumTwo</span>(<span class="tp">int</span>, <span class="tp">int</span>);  <span class="cm">// types only, names optional</span>
+  <div class="cb"><span class="cm">// prototype — tells the compiler the function exists before main</span>
+<span class="tp">int</span>  <span class="fn">sumTwo</span>(<span class="tp">int</span>, <span class="tp">int</span>);
 <span class="tp">void</span> <span class="fn">greet</span>();
 
 <span class="tp">int</span> <span class="fn">main</span>() {
     <span class="tp">int</span> result = <span class="fn">sumTwo</span>(<span class="num">3</span>, <span class="num">4</span>);  <span class="cm">// result = 7</span>
-    <span class="fn">greet</span>();                     <span class="cm">// prints "Hello!"</span>
+    <span class="fn">greet</span>();
     <span class="kw">return</span> <span class="num">0</span>;
 }
 
-<span class="cm">// returns a value (int)</span>
 <span class="tp">int</span> <span class="fn">sumTwo</span>(<span class="tp">int</span> x, <span class="tp">int</span> y) {
     <span class="kw">return</span> x + y;
 }
 
-<span class="cm">// returns nothing (void)</span>
-<span class="tp">void</span> <span class="fn">greet</span>() {
+<span class="tp">void</span> <span class="fn">greet</span>() {           <span class="cm">// void = returns nothing</span>
     <span class="fn">printf</span>(<span class="str">"Hello!\n"</span>);
 }</div>
 
-      <div class="tip">
-        <span class="tip-icon">ℹ</span>
-        <div>Function parameters are <strong>copies</strong> — modifying a parameter inside a function does not affect the original variable. If you need to modify the original, you need pointers. That's a topic for the next adventure.</div>
-      </div>
+  <div class="tip"><span>ℹ</span><div>Function parameters are <strong>copies</strong>. Changing <code>x</code> inside a function does not affect the original variable. To modify the original, you need pointers — that's the next chapter.</div></div>
+</section>
 
-      <div class="codeblock"><span class="cm">// functions can call other functions</span>
-<span class="tp">int</span> <span class="fn">square</span>(<span class="tp">int</span> n)     { <span class="kw">return</span> n * n; }
-<span class="tp">int</span> <span class="fn">cube</span>(<span class="tp">int</span> n)       { <span class="kw">return</span> n * <span class="fn">square</span>(n); }
-<span class="tp">int</span> <span class="fn">sumSquares</span>(<span class="tp">int</span> a, <span class="tp">int</span> b) {
-    <span class="kw">return</span> <span class="fn">square</span>(a) + <span class="fn">square</span>(b);
-}</div>
-    </section>
+<!-- ── S9: ARRAYS ── -->
+<section class="section" id="s9">
+  <div class="section-header"><span class="section-num">09</span><h2>Arrays</h2></div>
+  <p class="prose">An array stores multiple values of the <strong>same type</strong> side by side in memory. Unlike separate variables, elements are guaranteed to sit next to each other — no gaps.</p>
+  <p class="prose">Click any cell to inspect it. You can also edit values or add/remove elements.</p>
 
-    <!-- Section 9: Arrays -->
-    <section class="section" id="s9">
-      <div class="section-header">
-        <span class="section-num">09</span>
-        <h2>Arrays</h2>
-      </div>
-      <p class="prose">An array stores multiple values of the <strong>same type</strong> in a contiguous block of memory — a row of adjacent numbered boxes. The crucial difference from separate variables: array elements are guaranteed to sit next to each other in memory.</p>
-      <p class="prose">Click any cell to inspect it:</p>
-
-      <div class="demo">
-        <div class="demo-label">Array inspector</div>
-        <div style="font-family:var(--font-code);font-size:12px;color:var(--text2);margin-bottom:8px">int arr[] = {10, 25, 7, 42, 13, 88, 3, 56};</div>
-        <div class="arr-viz" id="arr-viz"></div>
-        <div class="info-out" id="arr-info">↑ Click a cell to inspect it</div>
-      </div>
-
-      <div class="codeblock"><span class="cm">// declare with fixed size</span>
-<span class="tp">int</span> scores[<span class="num">5</span>] = {<span class="num">90</span>, <span class="num">85</span>, <span class="num">78</span>, <span class="num">92</span>, <span class="num">88</span>};
-
-<span class="cm">// size inferred from initializer</span>
-<span class="tp">int</span> arr[] = {<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>};
-
-<span class="cm">// access by index — starts at 0, ends at size-1</span>
-<span class="fn">printf</span>(<span class="str">"%d\n"</span>, arr[<span class="num">0</span>]);  <span class="cm">// first element: 1</span>
-<span class="fn">printf</span>(<span class="str">"%d\n"</span>, arr[<span class="num">4</span>]);  <span class="cm">// last element:  5</span>
-
-<span class="cm">// modify an element</span>
-arr[<span class="num">2</span>] = <span class="num">99</span>;  <span class="cm">// arr is now {1, 2, 99, 4, 5}</span>
-
-<span class="cm">// loop through all elements</span>
-<span class="kw">for</span> (<span class="tp">int</span> i = <span class="num">0</span>; i &lt; <span class="num">5</span>; i++) {
-    <span class="fn">printf</span>(<span class="str">"arr[%d] = %d\n"</span>, i, arr[i]);
-}</div>
-
-      <div class="warn">
-        <span class="warn-icon">⚠</span>
-        <div>Array indices start at <strong>0</strong>, not 1. A 5-element array has valid indices 0 through 4. Accessing <code>arr[5]</code> is out of bounds — the compiler won't stop you, but you'll be writing to random memory. Strange things will happen.</div>
-      </div>
-
-      <div class="codeblock"><span class="cm">// passing an array to a function</span>
-<span class="tp">void</span> <span class="fn">printAll</span>(<span class="tp">int</span> arr[], <span class="tp">int</span> size) {
-    <span class="kw">for</span> (<span class="tp">int</span> i = <span class="num">0</span>; i &lt; size; i++)
-        <span class="fn">printf</span>(<span class="str">"%d "</span>, arr[i]);
-    <span class="fn">printf</span>(<span class="str">"\n"</span>);
-}
-
-<span class="cm">// arrays decay to pointers when passed — size is lost</span>
-<span class="cm">// always pass the size separately</span></div>
-    </section>
-
-    <!-- Section 10: Matrices -->
-    <section class="section" id="s10">
-      <div class="section-header">
-        <span class="section-num">10</span>
-        <h2>Matrices (2D arrays)</h2>
-      </div>
-      <p class="prose">A matrix is an array of arrays — a grid with rows and columns. Think of a spreadsheet, a game board, or a table of values. Declared as <code>type name[rows][cols]</code>.</p>
-      <p class="prose">Click any cell to see how it's accessed:</p>
-
-      <div class="demo">
-        <div class="demo-label">Matrix inspector — int mat[3][4]</div>
-        <div class="matrix-wrap">
-          <div class="matrix-grid" id="mat-grid" style="grid-template-columns:repeat(4,46px)"></div>
-        </div>
-        <div class="info-out" id="mat-info">↑ Click a cell to inspect it</div>
-      </div>
-
-      <div class="codeblock"><span class="cm">// declare a 3-row × 4-column matrix</span>
-<span class="tp">int</span> mat[<span class="num">3</span>][<span class="num">4</span>] = {
-    {<span class="num"> 1</span>, <span class="num"> 2</span>, <span class="num"> 3</span>, <span class="num"> 4</span>},  <span class="cm">// row 0</span>
-    {<span class="num"> 5</span>, <span class="num"> 6</span>, <span class="num"> 7</span>, <span class="num"> 8</span>},  <span class="cm">// row 1</span>
-    {<span class="num"> 9</span>, <span class="num">10</span>, <span class="num">11</span>, <span class="num">12</span>}   <span class="cm">// row 2</span>
-};
-
-<span class="cm">// access: mat[row][col]</span>
-<span class="fn">printf</span>(<span class="str">"%d\n"</span>, mat[<span class="num">1</span>][<span class="num">2</span>]);  <span class="cm">// 7</span>
-<span class="fn">printf</span>(<span class="str">"%d\n"</span>, mat[<span class="num">2</span>][<span class="num">3</span>]);  <span class="cm">// 12 (last cell)</span>
-
-<span class="cm">// loop through every cell</span>
-<span class="kw">for</span> (<span class="tp">int</span> r = <span class="num">0</span>; r &lt; <span class="num">3</span>; r++) {
-    <span class="kw">for</span> (<span class="tp">int</span> c = <span class="num">0</span>; c &lt; <span class="num">4</span>; c++) {
-        <span class="fn">printf</span>(<span class="str">"%3d"</span>, mat[r][c]);
-    }
-    <span class="fn">printf</span>(<span class="str">"\n"</span>);
-}
-<span class="cm">// output:
-//   1  2  3  4
-//   5  6  7  8
-//   9 10 11 12</span></div>
-    </section>
-
-
-    <div style="text-align: center; margin-top: 4rem; padding-bottom: 2rem;">
-      <div class="hero-badge" style="margin-bottom: 1rem;">Extra Practice</div>
-      <h2 style="font-family: var(--font-display); font-size: 24px; margin-bottom: 12px; font-weight: 700; color: var(--text);">
-        Ready For Some Action?
-      </h2>
-      <p class="prose" style="margin: 0 auto 1.5rem auto; max-width: 500px;">
-        Reading about C is one thing, but writing it is how you actually learn. Head out to Marwan's repository to check out 60+ solved C language problems. Now, try solving them on your own.
-      </p>
-      <a href="https://github.com/Marwan-Official/C-lang-Problems" target="_blank" style="text-decoration: none;">
-        <button style="padding: 10px 20px; font-weight: 500; font-size: 14px; background: var(--info-bg); color: var(--info-text); border-color: var(--info-border);">
-          View the GitHub Repository →
-        </button>
-      </a>
+  <div class="demo">
+    <div class="demo-label">Memory view — click any cell to edit</div>
+    <div class="arr-mem" id="arr-mem"></div>
+    <div class="arr-info-box" id="arr-info">↑ Click a cell to inspect and edit it</div>
+    <div class="arr-edit-row">
+      <span>Size:</span>
+      <input type="number" id="arr-size-input" value="8" min="1" max="12" oninput="arrResize()">
+      <span id="arr-val-ctrl" style="margin-left:12px;opacity:0.4;pointer-events:none">
+        <span>arr[<span id="arr-val-idx">0</span>] =</span>
+        <input type="number" id="arr-val-input" style="width:65px" oninput="arrEditVal()">
+      </span>
     </div>
+  </div>
 
-    <!-- Footer -->
-    <div class="footer">
-      <p>Writing this guide was a great time.<br>
-      <span style="color:var(--text3)">with no due respect — Amr Yasser aka Comrade General Ice Cube ❄</span><br>
-      <span style="color:var(--text3)">with no due respect — Yahia Shahin  aka RevisKor</span><br>
-      <span style="color:var(--text3)">with no due respect — Marwan Elmoghazy aka Frond-End Legend</span></p>
+  <div class="cb" id="arr-code-block"></div>
+
+  <div class="warn"><span>⚠</span><div>Indices start at <strong>0</strong>. A 5-element array has valid indices 0–4. Accessing <code>arr[5]</code> is out of bounds — the compiler won't stop you, but you'll be writing to random memory. Strange things happen.</div></div>
+</section>
+
+<!-- ── S10: MATRICES ── -->
+<section class="section" id="s10">
+  <div class="section-header"><span class="section-num">10</span><h2>Matrices (2D arrays)</h2></div>
+  <div class="demo">
+    <div class="demo-label">Matrix inspector — click any cell to edit</div>
+    <div class="arr-edit-row">
+      <span>Rows:</span>
+      <input type="number" id="mat-rows-input" value="3" min="1" max="5" oninput="matResize()">
+      <span style="margin-left:8px">Cols:</span>
+      <input type="number" id="mat-cols-input" value="4" min="1" max="6" oninput="matResize()">
+      <span id="mat-val-ctrl" style="margin-left:12px;opacity:0.4;pointer-events:none">
+        <span>mat[<span id="mat-val-r">0</span>][<span id="mat-val-c">0</span>] =</span>
+        <input type="number" id="mat-val-input" style="width:65px" oninput="matEditVal()">
+      </span>
     </div>
+    <div class="mat-grid-wrap">
+      <div id="mat-container"></div>
+    </div>
+    <div class="mat-info-box" id="mat-info">↑ Click any cell to inspect and edit it</div>
+  </div>
 
-  </main>
+  <div class="cb" id="mat-code-block"></div>
+</section>
+
+<!-- ── STEEL COMPILER ── -->
+<section class="section" id="sandbox">
+  <div class="section-header"><span class="section-num">∞</span><h2>Steel Compiler</h2></div>
+  <p class="prose">Ready to write some real code? This is a fully integrated C compiler. Type your program, hit <strong>Run Code</strong>, and watch the steel being forged in real-time.</p>
+
+  <div class="demo" style="background:#1e1e1e; border:1px solid #333; border-radius:var(--rl); padding:0; overflow:hidden">
+    <div style="background:#2d2d2d; padding:8px 16px; display:flex; align-items:center; gap:12px; border-bottom:1px solid #333">
+      <div style="display:flex; gap:6px">
+        <div style="width:12px; height:12px; border-radius:50%; background:#ff5f56"></div>
+        <div style="width:12px; height:12px; border-radius:50%; background:#ffbd2e"></div>
+        <div style="width:12px; height:12px; border-radius:50%; background:#27c93f"></div>
+      </div>
+      <span style="font-family:var(--font-c); font-size:11px; color:#999; margin-left:8px">main.c</span>
+      <button class="btn-primary" onclick="runCompiler()" id="btn-run" style="margin-left:auto; padding:4px 12px; font-size:12px">Run Code ▶</button>
+      <button onclick="resetCompiler()" style="padding:4px 10px; font-size:12px; background:#444; color:#ccc; border-color:#555">Reset</button>
+    </div>
+    
+    <textarea id="compiler-editor" spellcheck="false" style="width:100%; height:320px; background:#1e1e1e; color:#d4d4d4; border:none; padding:16px; font-family:var(--font-c); font-size:14px; line-height:1.5; outline:none; resize:vertical">#include <stdio.h>
+
+int main() {
+    printf("Ice & Steel forges the best code!\n");
+    
+    int a = 10, b = 20;
+    printf("Sum of %d and %d is %d\n", a, b, a + b);
+    
+    return 0;
+}</textarea>
+
+    <div style="background:#121212; border-top:1px solid #333; padding:12px 16px; min-height:100px">
+      <div style="font-family:var(--font-c); font-size:10px; color:#666; text-transform:uppercase; margin-bottom:8px; letter-spacing:0.05em">Output Terminal</div>
+      <pre id="compiler-output" style="margin:0; font-family:var(--font-c); font-size:13px; color:#ccc; white-space:pre-wrap; line-height:1.6">Click "Run Code" to compile...</pre>
+    </div>
+  </div>
+
+  <div class="tip">
+    <span>ℹ</span>
+    <div>This playground uses the <strong>Piston API</strong> to execute real C code on a remote server. You can use standard libraries like <code>stdio.h</code>, <code>math.h</code>, and <code>string.h</code>.</div>
+  </div>
+</section>
+
+<!-- ── EXTRA PRACTICE ── -->
+<div style="text-align:center;margin-top:4rem;padding-bottom:2rem">
+  <div class="hero-badge" style="margin-bottom:1rem">Extra Practice</div>
+  <h2 style="font-family:var(--font-d);font-size:24px;margin-bottom:12px;font-weight:700;color:var(--text)">Ready For Some Action?</h2>
+  <p class="prose" style="margin:0 auto 1.5rem;max-width:500px">
+    Reading about C is one thing, but writing it is how you actually learn. Head over to Marwan's repository to check out 60+ solved C language problems. Now try solving them on your own.
+  </p>
+  <a href="https://github.com/Marwan-Official/C-lang-Problems" target="_blank" style="text-decoration:none">
+    <button style="padding:10px 20px;font-weight:500;font-size:14px;background:var(--info-bg);color:var(--info-text);border-color:var(--info-border)">
+      View the GitHub Repository →
+    </button>
+  </a>
+</div>
+
+<div class="footer">
+  <p>
+    <span style="color:var(--text3)">with no due respect — Amr Yasser aka Comrade General Ice Cube ❄</span><br>
+    <span style="color:var(--text3)">with no due respect — Yahia Shahin aka RevisKor</span><br>
+    <span style="color:var(--text3)">with no due respect — Marwan Elmoghazy aka Frond-End Legend</span>
+  </p>
+</div>
+
+</main>
 </div>
 
 <script>
-  // ── Scroll spy ──────────────────────────────────────────────
-  (function(){
-    const sections = document.querySelectorAll('section[id]');
-    const navItems = document.querySelectorAll('.nav-item');
-    const obs = new IntersectionObserver(entries => {
-      entries.forEach(e => {
-        if (e.isIntersecting) {
-          navItems.forEach(n => n.classList.remove('active'));
-          const active = document.querySelector('.nav-item[href="#'+e.target.id+'"]');
-          if (active) active.classList.add('active');
-        }
-      });
-    }, { rootMargin: '-40% 0px -55% 0px' });
-    sections.forEach(s => obs.observe(s));
-  })();
-
-  // ── Scope Explorer ──────────────────────────────────────────
-  const scopeAccess = {
-    A: { can: ['a'], note: 'ScopeA (main) can only see variables defined in its own scope.' },
-    B: { can: ['a', 'b', 'e'], note: 'ScopeB can see its own vars (b, e) and everything in its parent ScopeA.' },
-    C: { can: ['a', 'b', 'c'], note: 'ScopeC can see c (own), b (parent B), a (grandparent A). Cannot see d or e (e is defined after C closes).' },
-    D: { can: ['a', 'b', 'd'], note: 'ScopeD can see d (own), b (parent B), a (grandparent A). Cannot see c (sibling scope, already closed).' },
-  };
-
-  function showScope(s) {
-    ['A','B','C','D'].forEach(id => {
-      const el = document.getElementById('sl-' + id);
-      el.classList.toggle('active', id === s);
-    });
-    const info = scopeAccess[s];
-    const el = document.getElementById('scope-result');
-    el.textContent = info.note + '  →  can access: ' + info.can.join(', ');
-    el.classList.add('highlight');
-  }
-
-  // ── Operator cards ─────────────────────────────────────────
-  function showOp(card, sym, code) {
-    document.querySelectorAll('.op-card').forEach(c => c.style.borderColor = '');
-    card.style.borderColor = 'var(--ice)';
-    const demo = document.getElementById('op-demo');
-    const block = document.getElementById('op-code');
-    block.textContent = code;
-    demo.style.display = 'block';
-  }
-
-  // ── Live calculator ─────────────────────────────────────────
-  function calcLive() {
-    const a = parseFloat(document.getElementById('num-a').value) || 0;
-    const b = parseFloat(document.getElementById('num-b').value) || 0;
-    const op = document.getElementById('num-op').value;
-    const resEl = document.getElementById('calc-result');
-    const noteEl = document.getElementById('calc-note');
-    let r, note = '';
-    if (op === '+') r = a + b;
-    else if (op === '-') r = a - b;
-    else if (op === '*') r = a * b;
-    else if (op === '/') {
-      if (b === 0) { resEl.textContent = 'ERR'; noteEl.textContent = 'division by zero!'; return; }
-      r = Math.trunc(a / b);
-      if (!Number.isInteger(a) || !Number.isInteger(b)) note = 'treating as integers: ' + Math.trunc(a) + ' / ' + Math.trunc(b);
-      else if (a % b !== 0) note = 'integer division — decimal part discarded';
-    } else if (op === '%') {
-      if (b === 0) { resEl.textContent = 'ERR'; noteEl.textContent = 'modulo by zero!'; return; }
-      r = Math.trunc(a) % Math.trunc(b);
-      note = 'remainder of ' + Math.trunc(a) + ' ÷ ' + Math.trunc(b);
-    }
-    resEl.textContent = r;
-    noteEl.textContent = note;
-  }
-  calcLive();
-
-  // ── If/else visualizer ──────────────────────────────────────
-  function updateIf() {
-    const v = parseInt(document.getElementById('score-slider').value);
-    document.getElementById('score-val').textContent = v;
-    const branches = [
-      { id: 'if-a', cond: v >= 90,           msg: 'printf("Excellent") runs — score ≥ 90' },
-      { id: 'if-b', cond: v >= 75 && v < 90, msg: 'printf("Good") runs — score ≥ 75' },
-      { id: 'if-c', cond: v >= 60 && v < 75, msg: 'printf("Pass") runs — score ≥ 60' },
-      { id: 'if-d', cond: v < 60,            msg: 'else block runs — none of the above matched' },
-    ];
-    let found = false;
-    branches.forEach(b => {
-      const el = document.getElementById(b.id);
-      el.classList.remove('active', 'inactive');
-      if (!found && b.cond) {
-        el.classList.add('active');
-        const out = document.getElementById('if-output');
-        out.textContent = '→ ' + b.msg;
-        out.classList.add('highlight');
-        found = true;
-      } else if (found) {
-        el.classList.add('inactive');
+/* ═══════════════════════════════════════════════
+   SCROLL SPY
+═══════════════════════════════════════════════ */
+(function(){
+  const secs = document.querySelectorAll('section[id]');
+  const navs = document.querySelectorAll('.nav-item');
+  secs.forEach(s => new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        navs.forEach(n=>n.classList.remove('active'));
+        const a=document.querySelector('.nav-item[href="#'+e.target.id+'"]');
+        if(a) a.classList.add('active');
       }
     });
+  },{rootMargin:'-40% 0px -55% 0px'}).observe(s));
+})();
+
+/* ═══════════════════════════════════════════════
+   SCOPE VISUALIZER
+═══════════════════════════════════════════════ */
+const SCOPE_RULES = {
+  A:{ visible:['a'],          note:'ScopeA is main(). It can only see its own variable: <strong>a</strong>.' },
+  B:{ visible:['a','b','e'],  note:'ScopeB sees its own vars (<strong>b</strong>, <strong>e</strong>) plus everything in ScopeA (its parent): <strong>a</strong>.' },
+  C:{ visible:['a','b','c'],  note:'ScopeC sees <strong>c</strong> (own) + <strong>b</strong> (parent B) + <strong>a</strong> (grandparent A). Cannot see d (sibling) or e (defined after C closes).' },
+  D:{ visible:['a','b','d'],  note:'ScopeD sees <strong>d</strong> (own) + <strong>b</strong> (parent B) + <strong>a</strong> (grandparent A). Cannot see c (sibling scope, already closed).' },
+};
+function selectScope(s){
+  ['A','B','C','D'].forEach(id=>{
+    const box=document.getElementById('sb-'+id);
+    box.classList.toggle('lit',id===s);
+  });
+  const rule=SCOPE_RULES[s];
+  document.querySelectorAll('.scope-var').forEach(el=>{
+    const v=el.dataset.var;
+    el.classList.toggle('visible',rule.visible.includes(v));
+    el.classList.toggle('hidden',!rule.visible.includes(v));
+  });
+  const res=document.getElementById('scope-result');
+  res.innerHTML='<strong>'+s+'</strong>: '+rule.note+'<br><span style="color:var(--ice-dark);font-family:var(--font-c);font-size:12px">Can access: '+rule.visible.join(', ')+'</span>';
+}
+
+/* ═══════════════════════════════════════════════
+   OPERATORS
+═══════════════════════════════════════════════ */
+const OP_DATA = {
+  '+'  :{ title:'Addition',           note:'', code:'int x = 5 + 3;\n// x = 8' },
+  '-'  :{ title:'Subtraction',        note:'', code:'int x = 10 - 4;\n// x = 6' },
+  '*'  :{ title:'Multiplication',     note:'', code:'int x = 3 * 7;\n// x = 21' },
+  '/'  :{ title:'Division ⚠',         note:'Dividing two integers drops the decimal — 7/2 is 3, not 3.5. Use 7.0/2 or cast to double if you need the fraction.',
+           code:'int    x = 7 / 2;    // x = 3  ← decimal dropped!\ndouble y = 7.0 / 2;  // y = 3.5' },
+  '%'  :{ title:'Modulus (remainder)',note:'', code:'int x = 7 % 3;   // x = 1\nint y = 10 % 2;  // y = 0  (even)\nint z = 11 % 2;  // z = 1  (odd)' },
+  '++' :{ title:'Increment',          note:'Post-increment (x++) uses the current value first, then increases. Pre-increment (++x) increases first, then uses.',
+           code:'int x = 5;\nint a = x++;  // a = 5, then x becomes 6\nint b = ++x;  // x becomes 7 first, b = 7' },
+  '--' :{ title:'Decrement',          note:'Same logic as increment but subtracts 1 instead.',
+           code:'int x = 5;\nint a = x--;  // a = 5, then x becomes 4\nint b = --x;  // x becomes 3 first, b = 3' },
+  '+=' :{ title:'Compound assignment',note:'', code:'int x = 5;\nx += 3;  // x = x + 3 = 8\nx -= 2;  // x = x - 2 = 6\nx *= 4;  // x = x * 4 = 24\nx /= 3;  // x = x / 3 = 8\nx %= 5;  // x = x % 5 = 3' },
+};
+function pickOp(card,sym){
+  document.querySelectorAll('.op-card').forEach(c=>c.classList.remove('selected'));
+  card.classList.add('selected');
+  const d=OP_DATA[sym];
+  document.getElementById('op-demo-title').textContent=d.title;
+  document.getElementById('op-code').textContent=d.code;
+  const noteEl=document.getElementById('op-note');
+  if(d.note){ noteEl.textContent=d.note; noteEl.style.display='block'; }
+  else { noteEl.style.display='none'; }
+  document.getElementById('op-demo').style.display='block';
+}
+
+/* ═══════════════════════════════════════════════
+   LIVE CALCULATOR
+═══════════════════════════════════════════════ */
+function doCalc(){
+  const a=parseFloat(document.getElementById('ca').value)||0;
+  const b=parseFloat(document.getElementById('cb2').value)||0;
+  const op=document.getElementById('cop').value;
+  const res=document.getElementById('cres');
+  const note=document.getElementById('cnote');
+  let r,n='';
+  if(op==='+') r=a+b;
+  else if(op==='-') r=a-b;
+  else if(op==='*') r=a*b;
+  else if(op==='/'){
+    if(b===0){ res.textContent='ERR'; note.textContent='Cannot divide by zero.'; return; }
+    r=Math.trunc(a/b);
+    if(a%b!==0) n='⚠ integer division — '+a+'/'+b+' in C gives '+r+', not '+(a/b).toFixed(2);
+  } else if(op==='%'){
+    if(b===0){ res.textContent='ERR'; note.textContent='Cannot modulo by zero.'; return; }
+    r=Math.trunc(a)%Math.trunc(b);
+    n='remainder of '+Math.trunc(a)+' ÷ '+Math.trunc(b);
   }
-  updateIf();
+  res.textContent=r; note.textContent=n;
+}
+doCalc();
 
-  // ── Loop visualizer ─────────────────────────────────────────
-  let loopStep = 0, loopTimer = null;
+/* ═══════════════════════════════════════════════
+   PRINTF BUILDER
+═══════════════════════════════════════════════ */
+function buildPrintf(){
+  const name=document.getElementById('pf-name').value||'';
+  const score=parseInt(document.getElementById('pf-score').value)||0;
+  const gpa=parseFloat(document.getElementById('pf-gpa').value)||0;
+  document.getElementById('pf-code').innerHTML=
+    '<span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>\n'+
+    '<span class="tp">int</span> <span class="fn">main</span>() {\n'+
+    '    <span class="tp">char</span>  name[]  = <span class="str">"'+esc(name)+'"</span>;\n'+
+    '    <span class="tp">int</span>   score   = <span class="num">'+score+'</span>;\n'+
+    '    <span class="tp">float</span> gpa     = <span class="num">'+gpa.toFixed(2)+'</span>;\n'+
+    '    <span class="fn">printf</span>(<span class="str">"Student: %s\\n"</span>, name);\n'+
+    '    <span class="fn">printf</span>(<span class="str">"Score:   %d\\n"</span>, score);\n'+
+    '    <span class="fn">printf</span>(<span class="str">"GPA:     %.2f\\n"</span>, gpa);\n'+
+    '}';
+  document.getElementById('pf-output').textContent=
+    'Student: '+name+'\nScore:   '+score+'\nGPA:     '+gpa.toFixed(2);
+}
+function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+buildPrintf();
 
-  function buildLoopViz() {
-    const n = parseInt(document.getElementById('loop-size').value);
-    document.getElementById('loop-max-label').textContent = n;
-    document.getElementById('loop-size-out').textContent = n;
-    const viz = document.getElementById('loop-viz');
-    viz.innerHTML = '';
-    for (let i = 0; i < n; i++) {
-      const b = document.createElement('div');
-      b.className = 'loop-box';
-      b.id = 'lb-' + i;
-      b.textContent = i;
-      viz.appendChild(b);
+/* ═══════════════════════════════════════════════
+   IF/ELSE VISUALIZER
+═══════════════════════════════════════════════ */
+function runIf(){
+  const v=parseInt(document.getElementById('score-sl').value);
+  document.getElementById('score-disp').textContent=v;
+  const cases=[
+    { id:'if-r0', arr:'if-arr0', cond:v>=90,        why:'score ('+v+') ≥ 90 → true' },
+    { id:'if-r1', arr:'if-arr1', cond:v>=75&&v<90,  why:v>=90?'skipped — first branch already ran':'score ('+v+') ≥ 75 → true' },
+    { id:'if-r2', arr:'if-arr2', cond:v>=60&&v<75,  why:v>=75?'skipped':'score ('+v+') ≥ 60 → true' },
+    { id:'if-r3', arr:'if-arr3', cond:v<60,          why:v>=60?'skipped':'no condition matched → else runs' },
+  ];
+  let found=false, activeWhy='';
+  cases.forEach(c=>{
+    const row=document.getElementById(c.id);
+    const arr=document.getElementById(c.arr);
+    row.classList.remove('active','inactive');
+    arr.classList.remove('running');
+    if(!found&&c.cond){
+      row.classList.add('active');
+      arr.classList.add('running');
+      arr.textContent='▶ runs';
+      activeWhy=c.why;
+      found=true;
+    } else if(found){
+      row.classList.add('inactive');
+      arr.textContent='skipped';
+    } else {
+      arr.textContent='false';
     }
-    loopStep = 0;
-    document.getElementById('loop-i').textContent = 0;
-    document.getElementById('loop-count').textContent = 0;
-    document.getElementById('loop-progress').style.width = '0%';
-  }
+  });
+  document.getElementById('if-explain').textContent=activeWhy;
+}
+runIf();
 
-  function resetLoop() {
-    clearInterval(loopTimer);
-    loopTimer = null;
-    buildLoopViz();
-  }
+/* ═══════════════════════════════════════════════
+   LOOP STEPPER — clean phase machine, auto-plays alone
+═══════════════════════════════════════════════ */
+const LOOP_PARAMS = {
+  for:{ start:1, end:5, direction:'up' },
+  while:{ start:5, end:1, direction:'down' },
+  dowhile:{ start:1, end:5, direction:'up' }
+};
 
-  function stepLoop() {
-    const n = parseInt(document.getElementById('loop-size').value);
-    if (loopStep > n) return;
-    for (let i = 0; i < n; i++) {
-      const b = document.getElementById('lb-' + i);
-      if (!b) continue;
-      b.classList.remove('active', 'done');
-      if (i < loopStep) b.classList.add('done');
-      else if (i === loopStep && loopStep < n) b.classList.add('active');
+function getLoopOp(direction){
+  return direction==='up'?'<':'>';
+}
+function getLoopIncrement(direction){
+  return direction==='up'?'i++':'i--';
+}
+function getWhileIncrement(direction){
+  return direction==='up'?'n++':'n--';
+}
+
+const LOOP_DEFS = {
+  for:{
+    vars:['i'],
+    codeDisplay:function(){
+      const p=LOOP_PARAMS.for;
+      const op=getLoopOp(p.direction);
+      const inc=getLoopIncrement(p.direction);
+      const end=p.direction==='up'?p.end:p.start;
+      const cond=p.direction==='up'?'i < '+p.end:'i > '+p.end;
+      return ['for (int i = '+p.start+'; '+cond+'; '+inc+') {','    printf("%d\\n", i);','}'];
+    },
+    getParamUI:function(){
+      const p=LOOP_PARAMS.for;
+      return '<label style="font-size:13px;color:var(--text2)">From <input type="number" id="loop-for-start" value="'+p.start+'" style="width:45px" onchange="updateLoopParam(\'for\',\'start\',this.value)"> To <input type="number" id="loop-for-end" value="'+p.end+'" style="width:45px" onchange="updateLoopParam(\'for\',\'end\',this.value)"></label>'+
+             '<span style="margin-left:12px;font-size:13px;color:var(--ice-dark);font-weight:500">'+(p.direction==='up'?'↑ Ascending':'↓ Descending')+'</span>';
+    },
+    initState:()=>({i:LOOP_PARAMS.for.start,cond:null,out:[],iter:0})
+  },
+  while:{
+    vars:['n'],
+    codeDisplay:function(){
+      const p=LOOP_PARAMS.while;
+      const cond=p.direction==='up'?'n <= '+p.end:'n >= '+p.end;
+      const inc=getWhileIncrement(p.direction);
+      return ['int n = '+p.start+';','while ('+cond+') {','    printf("%d\\n", n);','    '+inc+';','}'];
+    },
+    getParamUI:function(){
+      const p=LOOP_PARAMS.while;
+      return '<label style="font-size:13px;color:var(--text2)">From <input type="number" id="loop-while-start" value="'+p.start+'" style="width:45px" onchange="updateLoopParam(\'while\',\'start\',this.value)"> To <input type="number" id="loop-while-end" value="'+p.end+'" style="width:45px" onchange="updateLoopParam(\'while\',\'end\',this.value)"></label>'+
+             '<span style="margin-left:12px;font-size:13px;color:var(--ice-dark);font-weight:500">'+(p.direction==='up'?'↑ Ascending':'↓ Descending')+'</span>';
+    },
+    initState:()=>({n:LOOP_PARAMS.while.start,cond:null,out:[],iter:0})
+  },
+  dowhile:{
+    vars:['n'],
+    codeDisplay:function(){
+      const p=LOOP_PARAMS.dowhile;
+      const cond=p.direction==='up'?'n <= '+p.end:'n >= '+p.end;
+      const inc=getWhileIncrement(p.direction);
+      return ['int n = '+p.start+';','do {','    printf("%d\\n", n);','    '+inc+';','} while ('+cond+');'];
+    },
+    getParamUI:function(){
+      const p=LOOP_PARAMS.dowhile;
+      return '<label style="font-size:13px;color:var(--text2)">From <input type="number" id="loop-dw-start" value="'+p.start+'" style="width:45px" onchange="updateLoopParam(\'dowhile\',\'start\',this.value)"> To <input type="number" id="loop-dw-end" value="'+p.end+'" style="width:45px" onchange="updateLoopParam(\'dowhile\',\'end\',this.value)"></label>'+
+             '<span style="margin-left:12px;font-size:13px;color:var(--ice-dark);font-weight:500">'+(p.direction==='up'?'↑ Ascending':'↓ Descending')+'</span>';
+    },
+    initState:()=>({n:LOOP_PARAMS.dowhile.start,cond:null,out:[],iter:0})
+  }
+};
+
+let curLoopType='for';
+let loopState=null;
+let loopPhase='init';
+let loopDone=false;
+let loopTimer=null;
+
+function switchLoop(type,btn){
+  document.querySelectorAll('.loop-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  curLoopType=type;
+  loopPhase='init';
+  buildLoopCodePanel();
+  renderLoopParams();
+  loopReset();
+}
+
+function renderLoopParams(){
+  const def=LOOP_DEFS[curLoopType];
+  const paramsEl=document.getElementById('loop-params');
+  paramsEl.innerHTML=def.getParamUI();
+}
+
+function updateLoopParam(type,param,value){
+  LOOP_PARAMS[type][param]=isNaN(value)?value:parseInt(value);
+  const p=LOOP_PARAMS[type];
+  p.direction=(p.start<=p.end)?'up':'down';
+  buildLoopCodePanel();
+  renderLoopParams();
+  loopReset();
+}
+
+function buildLoopCodePanel(){
+  const def=LOOP_DEFS[curLoopType];
+  const codeLines=typeof def.codeDisplay==='function'?def.codeDisplay():def.codeDisplay;
+  const panel=document.getElementById('loop-code-panel');
+  panel.innerHTML='';
+  codeLines.forEach((line,i)=>{
+    const el=document.createElement('div');
+    el.className='loop-line';
+    el.id='ll-'+i;
+    el.innerHTML='<span class="ln">'+(i+1)+'</span><span>'+line+'</span>';
+    panel.appendChild(el);
+  });
+}
+
+function loopReset(){
+  clearInterval(loopTimer); loopTimer=null;
+  const def=LOOP_DEFS[curLoopType];
+  loopState=def.initState();
+  loopPhase='init';
+  loopDone=false;
+  buildLoopCodePanel();
+  renderLoopParams();
+  updateLoopUI(null);
+  document.getElementById('btn-play').textContent='Play ▶';
+}
+
+function updateLoopUI(activeLine){
+  const def=LOOP_DEFS[curLoopType];
+  document.querySelectorAll('.loop-line').forEach((el,i)=>{
+    el.classList.toggle('active-line',i===activeLine);
+  });
+  const showI=def.vars.includes('i');
+  const showN=def.vars.includes('n');
+  document.getElementById('lv-i').style.display=showI?'block':'none';
+  document.getElementById('lv-n').style.display=showN?'block':'none';
+  if(showI) document.getElementById('lv-i-val').textContent=loopState.i!=null?loopState.i:'—';
+  if(showN) document.getElementById('lv-n-val').textContent=loopState.n!=null?loopState.n:'—';
+  const condEl=document.getElementById('lv-cond-val');
+  condEl.textContent=loopState.cond===null?'—':(loopState.cond?'✓ true':'✗ false');
+  condEl.style.color=loopState.cond===null?'var(--text3)':(loopState.cond?'var(--ok-text)':'var(--accent)');
+  document.getElementById('lv-iter').textContent=loopState.iter;
+  const outEl=document.getElementById('loop-output');
+  if(loopState.out.length===0){ outEl.textContent='—'; }
+  else { outEl.innerHTML=loopState.out.map(v=>'<span class="out-num">'+v+'</span>').join('\n'); }
+}
+
+function flashVar(v){
+  const el=document.getElementById('lv-'+v+'-val');
+  if(el){ el.classList.add('changed'); setTimeout(()=>el.classList.remove('changed'),400); }
+}
+
+function executeNextStep(){
+  if(loopDone) return;
+  const prev={...loopState,out:[...loopState.out]};
+  let codeLine=0;
+
+  if(curLoopType==='for'){
+    const p=LOOP_PARAMS.for;
+    const isAsc=p.direction==='up';
+    if(loopPhase==='init'){ loopState.i=p.start; codeLine=0; loopPhase='check'; }
+    else if(loopPhase==='check'){
+      loopState.cond=isAsc?(loopState.i<=p.end):(loopState.i>=p.end); codeLine=0;
+      if(loopState.cond) loopPhase='body'; else loopPhase='done';
+    } else if(loopPhase==='body'){
+      loopState.out=[...loopState.out,loopState.i]; codeLine=1; loopPhase='step';
+    } else if(loopPhase==='step'){
+      if(isAsc) loopState.i++; else loopState.i--; codeLine=0; loopState.iter++; loopPhase='check';
     }
-    const done = Math.min(loopStep, n);
-    document.getElementById('loop-i').textContent = loopStep < n ? loopStep : 'done';
-    document.getElementById('loop-count').textContent = done;
-    document.getElementById('loop-progress').style.width = Math.round(done / n * 100) + '%';
-    if (loopStep <= n) loopStep++;
+  } else if(curLoopType==='while'){
+    const p=LOOP_PARAMS.while;
+    const isAsc=p.direction==='up';
+    if(loopPhase==='init'){ loopState.n=p.start; codeLine=0; loopPhase='check'; }
+    else if(loopPhase==='check'){
+      loopState.cond=isAsc?(loopState.n<=p.end):(loopState.n>=p.end); codeLine=1;
+      if(loopState.cond) loopPhase='body'; else loopPhase='done';
+    } else if(loopPhase==='body'){
+      loopState.out=[...loopState.out,loopState.n]; codeLine=2; loopPhase='step';
+    } else if(loopPhase==='step'){
+      if(isAsc) loopState.n++; else loopState.n--; codeLine=3; loopState.iter++; loopPhase='check';
+    }
+  } else if(curLoopType==='dowhile'){
+    const p=LOOP_PARAMS.dowhile;
+    const isAsc=p.direction==='up';
+    if(loopPhase==='init'){ loopState.n=p.start; codeLine=0; loopPhase='body'; }
+    else if(loopPhase==='body'){
+      loopState.out=[...loopState.out,loopState.n]; codeLine=2; loopPhase='step';
+    } else if(loopPhase==='step'){
+      if(isAsc) loopState.n++; else loopState.n--; codeLine=3; loopPhase='check';
+    } else if(loopPhase==='check'){
+      loopState.cond=isAsc?(loopState.n<=p.end):(loopState.n>=p.end); codeLine=4;
+      if(loopState.cond){ loopState.iter++; loopPhase='body'; } else loopPhase='done';
+    }
   }
 
-  function playLoop() {
-    if (loopTimer) { clearInterval(loopTimer); loopTimer = null; return; }
-    loopTimer = setInterval(() => {
-      const n = parseInt(document.getElementById('loop-size').value);
-      if (loopStep > n) { clearInterval(loopTimer); loopTimer = null; return; }
-      stepLoop();
-    }, 320);
+  if(loopPhase==='done'){
+    loopDone=true;
+    clearInterval(loopTimer); loopTimer=null;
+    document.getElementById('btn-play').textContent='Play ▶';
+    updateLoopUI(null);
+    const outEl=document.getElementById('loop-output');
+    outEl.innerHTML+=(loopState.out.length?'\n':'')+'<span style="color:var(--text3);font-size:11px">─── loop finished ───</span>';
+    return;
   }
 
-  buildLoopViz();
+  ['i','n'].forEach(v=>{
+    if(loopState[v]!==undefined&&prev[v]!==loopState[v]) flashVar(v);
+  });
+  updateLoopUI(codeLine);
+}
 
-  // ── Array inspector ─────────────────────────────────────────
-  (function () {
-    const data = [10, 25, 7, 42, 13, 88, 3, 56];
-    const viz = document.getElementById('arr-viz');
-    data.forEach((v, i) => {
-      const cell = document.createElement('div');
-      cell.className = 'arr-cell';
-      cell.innerHTML =
-        '<div class="arr-val" id="av-' + i + '" onclick="selectArr(' + i + ',' + v + ',' + data.length + ')">' + v + '</div>' +
-        '<div class="arr-idx">[' + i + ']</div>';
-      viz.appendChild(cell);
+function loopStep(){
+  if(loopDone) return;
+  executeNextStep();
+}
+
+function loopPlay(){
+  if(loopTimer){
+    clearInterval(loopTimer); loopTimer=null;
+    document.getElementById('btn-play').textContent='Play ▶';
+    return;
+  }
+  if(loopDone){ loopReset(); }
+  document.getElementById('btn-play').textContent='Pause ⏸';
+  function tick(){
+    if(loopDone){ loopTimer=null; document.getElementById('btn-play').textContent='Play ▶'; return; }
+    executeNextStep();
+    const spd=1000-parseInt(document.getElementById('loop-spd').value);
+    loopTimer=setTimeout(tick,spd);
+  }
+  const spd=1000-parseInt(document.getElementById('loop-spd').value);
+  loopTimer=setTimeout(tick,spd);
+}
+
+loopReset();
+renderLoopParams();
+
+/* ═══════════════════════════════════════════════
+   ARRAY INSPECTOR
+═══════════════════════════════════════════════ */
+let arrData=new Array(8).fill(0);
+let arrSel=null;
+const BASE_ADDR=0x1000;
+
+function renderArr(){
+  const mem=document.getElementById('arr-mem');
+  mem.innerHTML='';
+  arrData.forEach((v,i)=>{
+    const slot=document.createElement('div');
+    slot.className='arr-slot';
+    const addr='0x'+(BASE_ADDR+i*4).toString(16).toUpperCase();
+    slot.innerHTML=
+      '<div class="arr-addr">'+addr+'</div>'+
+      '<div class="arr-box'+(i===arrSel?' sel':'')+'" id="ab-'+i+'" onclick="arrClick('+i+')">'+v+'</div>'+
+      '<div class="arr-idx2">['+i+']</div>';
+    mem.appendChild(slot);
+  });
+}
+
+function arrClick(i){
+  arrSel=i;
+  renderArr();
+  const addr='0x'+(BASE_ADDR+i*4).toString(16).toUpperCase();
+  document.getElementById('arr-info').innerHTML=
+    '<strong>arr['+i+']</strong> = '+arrData[i]+
+    '&nbsp;&nbsp;|&nbsp;&nbsp;index: <strong>'+i+'</strong>'+
+    '&nbsp;&nbsp;|&nbsp;&nbsp;address: <strong>'+addr+'</strong>';
+  
+  const ctrl = document.getElementById('arr-val-ctrl');
+  ctrl.style.opacity = '1';
+  ctrl.style.pointerEvents = 'auto';
+  document.getElementById('arr-val-idx').textContent = i;
+  const input = document.getElementById('arr-val-input');
+  input.value = arrData[i];
+  input.focus();
+}
+
+function arrResize(){
+  const size = parseInt(document.getElementById('arr-size-input').value) || 1;
+  while(arrData.length < size) arrData.push(0);
+  while(arrData.length > size) arrData.pop();
+  if(arrSel >= arrData.length) arrSel = null;
+  renderArr();
+  renderArrCode();
+}
+
+function arrEditVal(){
+  if(arrSel === null) return;
+  const val = parseInt(document.getElementById('arr-val-input').value) || 0;
+  arrData[arrSel] = val;
+  renderArr();
+  renderArrCode();
+}
+
+function renderArrCode(){
+  const code = document.getElementById('arr-code-block');
+  if(!code) return;
+  let items = arrData.map(v => `<span class="num">${v}</span>`).join(', ');
+  code.innerHTML = `<span class="cm">// declare with size ${arrData.length}</span>\n` +
+                   `<span class="tp">int</span> arr[<span class="num">${arrData.length}</span>] = {${items}};`;
+}
+
+renderArr();
+renderArrCode();
+
+/* ═══════════════════════════════════════════════
+   MATRIX INSPECTOR — styled like array
+═══════════════════════════════════════════════ */
+let MAT=[[0,0,0,0],[0,0,0,0],[0,0,0,0]];
+let matSel=null;
+
+function renderMat(){
+  const rows=MAT.length, cols=MAT[0].length;
+  const container=document.getElementById('mat-container');
+  container.innerHTML='';
+
+  // column header row
+  const colHeaderRow=document.createElement('div');
+  colHeaderRow.className='mat-col-header-row';
+  for(let c=0;c<cols;c++){
+    const lbl=document.createElement('div');
+    lbl.className='mat-col-label';
+    lbl.textContent='['+c+']';
+    lbl.style.cursor='pointer';
+    lbl.onmouseenter=()=>hiCol(c,true);
+    lbl.onmouseleave=()=>hiCol(c,false);
+    colHeaderRow.appendChild(lbl);
+  }
+  container.appendChild(colHeaderRow);
+
+  MAT.forEach((row,r)=>{
+    const rowEl=document.createElement('div');
+    rowEl.className='mat-row';
+
+    const rowLbl=document.createElement('div');
+    rowLbl.className='mat-row-label';
+    rowLbl.textContent='['+r+']';
+    rowLbl.style.cursor='pointer';
+    rowLbl.onmouseenter=()=>hiRow(r,true);
+    rowLbl.onmouseleave=()=>hiRow(r,false);
+    rowEl.appendChild(rowLbl);
+
+    row.forEach((v,c)=>{
+      const cell=document.createElement('div');
+      cell.className='mat-cell';
+      cell.id='mc-'+r+'-'+c;
+      cell.textContent=v;
+      cell.onmouseenter=()=>{ hiRow(r,true); hiCol(c,true); };
+      cell.onmouseleave=()=>{ hiRow(r,false); hiCol(c,false); };
+      cell.onclick=()=>matClick(r,c,v);
+      if(matSel && matSel[0]===r && matSel[1]===c) cell.classList.add('sel');
+      rowEl.appendChild(cell);
     });
-  })();
+    container.appendChild(rowEl);
+  });
+}
 
-  function selectArr(i, v, len) {
-    document.querySelectorAll('.arr-val').forEach(el => el.classList.remove('active'));
-    document.getElementById('av-' + i).classList.add('active');
-    const el = document.getElementById('arr-info');
-    el.textContent = 'arr[' + i + '] = ' + v + '   |   index ' + i + ' of ' + (len - 1) + '   |   address = arr + ' + i;
-    el.classList.add('highlight');
+function matResize(){
+  const rows = parseInt(document.getElementById('mat-rows-input').value) || 1;
+  const cols = parseInt(document.getElementById('mat-cols-input').value) || 1;
+  
+  while(MAT.length < rows) {
+    const newRow = new Array(MAT[0] ? MAT[0].length : cols).fill(0);
+    MAT.push(newRow);
   }
+  while(MAT.length > rows) MAT.pop();
+  
+  MAT.forEach(row => {
+    while(row.length < cols) row.push(0);
+    while(row.length > cols) row.pop();
+  });
+  
+  if(matSel && (matSel[0] >= rows || matSel[1] >= cols)) matSel = null;
+  renderMat();
+  renderMatCode();
+}
 
-  // ── Matrix inspector ─────────────────────────────────────────
-  (function () {
-    const data = [[1,2,3,4],[5,6,7,8],[9,10,11,12]];
-    const rows = data.length, cols = data[0].length;
-    const grid = document.getElementById('mat-grid');
-    grid.style.gridTemplateColumns = 'repeat(' + cols + ', 46px)';
-    data.forEach((row, r) => {
-      row.forEach((v, c) => {
-        const cell = document.createElement('div');
-        cell.className = 'mat-cell';
-        cell.id = 'mc-' + r + '-' + c;
-        cell.textContent = v;
-        cell.onclick = () => {
-          document.querySelectorAll('.mat-cell').forEach(el => el.classList.remove('active'));
-          cell.classList.add('active');
-          const el = document.getElementById('mat-info');
-          el.textContent = 'mat[' + r + '][' + c + '] = ' + v + '   |   row ' + r + ', column ' + c;
-          el.classList.add('highlight');
-        };
-        grid.appendChild(cell);
-      });
+function matEditVal(){
+  if(!matSel) return;
+  const [r, c] = matSel;
+  const val = parseInt(document.getElementById('mat-val-input').value) || 0;
+  MAT[r][c] = val;
+  renderMat();
+  renderMatCode();
+}
+
+function hiRow(r,on){
+  for(let c=0;c<MAT[0].length;c++){
+    const el=document.getElementById('mc-'+r+'-'+c);
+    if(el&&!(matSel&&matSel[0]===r&&matSel[1]===c))
+      el.classList.toggle('row-hi',on);
+  }
+}
+function hiCol(c,on){
+  for(let r=0;r<MAT.length;r++){
+    const el=document.getElementById('mc-'+r+'-'+c);
+    if(el&&!(matSel&&matSel[0]===r&&matSel[1]===c))
+      el.classList.toggle('col-hi',on);
+  }
+}
+function matClick(r,c,v){
+  matSel=[r,c];
+  document.querySelectorAll('.mat-cell').forEach(el=>el.classList.remove('sel','row-hi','col-hi'));
+  const cell = document.getElementById('mc-'+r+'-'+c);
+  if(cell) cell.classList.add('sel');
+  
+  document.getElementById('mat-info').innerHTML=
+    '<strong>mat['+r+']['+c+']</strong> = '+v+
+    '&nbsp;&nbsp;|&nbsp;&nbsp;row <strong>'+r+'</strong>, col <strong>'+c+'</strong>';
+  
+  const ctrl = document.getElementById('mat-val-ctrl');
+  ctrl.style.opacity = '1';
+  ctrl.style.pointerEvents = 'auto';
+  document.getElementById('mat-val-r').textContent = r;
+  document.getElementById('mat-val-c').textContent = c;
+  const input = document.getElementById('mat-val-input');
+  input.value = v;
+  input.focus();
+}
+
+function renderMatCode(){
+  const code = document.getElementById('mat-code-block');
+  if(!code) return;
+  const rows = MAT.length, cols = MAT[0].length;
+  let body = MAT.map(row => {
+    let items = row.map(v => `<span class="num">${v}</span>`).join(', ');
+    return `    {${items}}`;
+  }).join(',\n');
+  
+  code.innerHTML = `<span class="cm">// ${rows} rows × ${cols} columns</span>\n` +
+                   `<span class="tp">int</span> mat[<span class="num">${rows}</span>][<span class="num">${cols}</span>] = {\n${body}\n};`;
+}
+
+renderMat();
+renderMatCode();
+
+/* ═══════════════════════════════════════════════
+   STEEL COMPILER (PISTON API)
+═══════════════════════════════════════════════ */
+async function runCompiler() {
+  const btn = document.getElementById('btn-run');
+  const output = document.getElementById('compiler-output');
+  const code = document.getElementById('compiler-editor').value;
+
+  btn.disabled = true;
+  btn.textContent = 'Compiling...';
+  output.textContent = '> gcc main.c -o main && ./main\n';
+  output.style.color = '#888';
+
+  try {
+    const response = await fetch('https://emkc.org/api/v2/piston/execute', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        language: 'c',
+        version: '10.2.0',
+        files: [{ name: 'main.c', content: code }]
+      })
     });
-  })();
+    const result = await response.json();
+    
+    output.style.color = result.run.code === 0 ? '#ccc' : '#ff5f56';
+    output.textContent = result.run.output || (result.run.code === 0 ? '[Success: No output]' : '[Error]');
+    if (result.compile && result.compile.stderr) {
+      output.textContent = result.compile.stderr + '\n' + output.textContent;
+    }
+  } catch (err) {
+    output.style.color = '#ff5f56';
+    output.textContent = 'Error connecting to compiler API. Please check your internet connection.';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Run Code ▶';
+  }
+}
+
+function resetCompiler() {
+  document.getElementById('compiler-editor').value = '#include <stdio.h>\n\nint main() {\n    printf("Ice & Steel forges the best code!\\n");\n    \n    int a = 10, b = 20;\n    printf("Sum of %d and %d is %d\\n", a, b, a + b);\n    \n    return 0;\n}';
+  document.getElementById('compiler-output').textContent = 'Click "Run Code" to compile...';
+  document.getElementById('compiler-output').style.color = '#ccc';
+}
+
+// Quick Helpers: Tab, Auto-close, Auto-indent
+document.getElementById('compiler-editor').addEventListener('keydown', function(e) {
+  const start = this.selectionStart;
+  const end = this.selectionEnd;
+  const pairs = { '(': ')', '[': ']', '{': '}', '"': '"', "'": "'" };
+
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    this.value = this.value.substring(0, start) + '    ' + this.value.substring(end);
+    this.selectionStart = this.selectionEnd = start + 4;
+  } else if (pairs[e.key]) {
+    e.preventDefault();
+    this.value = this.value.substring(0, start) + e.key + pairs[e.key] + this.value.substring(end);
+    this.selectionStart = this.selectionEnd = start + 1;
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    const lines = this.value.substring(0, start).split('\n');
+    const lastLine = lines[lines.length - 1];
+    const indent = lastLine.match(/^\s*/)[0];
+    const extra = lastLine.trim().endsWith('{') ? '    ' : '';
+    this.value = this.value.substring(0, start) + '\n' + indent + extra + this.value.substring(end);
+    this.selectionStart = this.selectionEnd = start + 1 + indent.length + extra.length;
+  }
+});
 </script>
 </body>
 </html>
