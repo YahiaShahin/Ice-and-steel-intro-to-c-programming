@@ -68,6 +68,7 @@
     color: var(--text);
     line-height: 1.7;
     font-size: 16px;
+    overflow-x: hidden;
   }
 
   /* Layout */
@@ -122,6 +123,7 @@
   .main {
     flex: 1;
     max-width: 780px;
+    min-width: 0;
     padding: 3rem 3rem 6rem;
     margin: 0 auto;
   }
@@ -222,7 +224,15 @@
   .tip-icon, .warn-icon { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
 
   /* Table */
-  .dtable { width: 100%; font-size: 13px; border-collapse: collapse; margin: 1rem 0; }
+  .dtable {
+    width: 100%;
+    font-size: 13px;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
   .dtable th {
     text-align: left;
     font-weight: 500;
@@ -976,11 +986,28 @@ arr[<span class="num">2</span>] = <span class="num">99</span>;  <span class="cm"
 //   9 10 11 12</span></div>
     </section>
 
+
+    <div style="text-align: center; margin-top: 4rem; padding-bottom: 2rem;">
+      <div class="hero-badge" style="margin-bottom: 1rem;">Extra Practice</div>
+      <h2 style="font-family: var(--font-display); font-size: 24px; margin-bottom: 12px; font-weight: 700; color: var(--text);">
+        Ready For Some Action?
+      </h2>
+      <p class="prose" style="margin: 0 auto 1.5rem auto; max-width: 500px;">
+        Reading about C is one thing, but writing it is how you actually learn. Head out to Marwan's repository to check out 60+ solved C language problems. Now, try solving them on your own.
+      </p>
+      <a href="https://github.com/Marwan-Official/C-lang-Problems" target="_blank" style="text-decoration: none;">
+        <button style="padding: 10px 20px; font-weight: 500; font-size: 14px; background: var(--info-bg); color: var(--info-text); border-color: var(--info-border);">
+          View the GitHub Repository →
+        </button>
+      </a>
+    </div>
+
     <!-- Footer -->
     <div class="footer">
       <p>Writing this guide was a great time.<br>
       <span style="color:var(--text3)">with no due respect — Amr Yasser aka Comrade General Ice Cube ❄</span><br>
-      <span style="color:var(--text3)">with no due respect — Yahia Shahin  aka RevisKor</span></p>
+      <span style="color:var(--text3)">with no due respect — Yahia Shahin  aka RevisKor</span><br>
+      <span style="color:var(--text3)">with no due respect — Marwan Elmoghazy aka Frond-End Legend</span></p>
     </div>
 
   </main>
